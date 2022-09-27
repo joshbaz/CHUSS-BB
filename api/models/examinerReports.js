@@ -11,8 +11,13 @@ const examinerReportSchema = mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: 'examiners',
         },
-        score: Number,
+        score: { type: Number, required: true },
+        payment: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'payments',
+        },
         remarks: String,
+        ungraded: { type: Boolean },
         reportStatus: String,
         marked: { type: Boolean, default: false },
         reportFiles: [

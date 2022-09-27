@@ -10,6 +10,10 @@ require('dotenv').config()
 const adminRoutes = require('./api/routes/administrator')
 const projectRoutes = require('./api/routes/project')
 const examinerRoutes = require('./api/routes/examiner')
+const tagRoutes = require('./api/routes/tags')
+const preferenceRoutes = require('./api/routes/preferences')
+const reportRoutes = require('./api/routes/examinerReports')
+const paymentRoutes = require('./api/routes/payments')
 //apply middleware
 app.use(cors())
 app.use(express.json())
@@ -45,6 +49,10 @@ app.get('/', (req, res, next) => {
 app.use('/admin', adminRoutes)
 app.use('/project', projectRoutes)
 app.use('/examiner', examinerRoutes)
+app.use('/tags', tagRoutes)
+app.use('/preferences', preferenceRoutes)
+app.use('/reports', reportRoutes)
+app.use('/payments', paymentRoutes)
 /** global error handling */
 app.use((error, req, res, next) => {
     const status = error.statusCode || 500

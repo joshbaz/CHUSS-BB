@@ -13,6 +13,7 @@ const examinerSchema = mongoose.Schema(
         otherTitles: String,
         typeOfExaminer: String,
         preferredPayment: String,
+        studentsNo: Number,
         paymentInfo: [
             {
                 preferredPayment: String,

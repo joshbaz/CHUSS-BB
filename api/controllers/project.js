@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const ProjectModel = require('../models/projects')
 const StudentModel = require('../models/students')
 const ProjectFileModel = require('../models/projectFiles')
+const ProgramTypeModel = require('../models/programType')
 require('../models/examiners')
 require('../models/examinerReports')
 
@@ -39,6 +40,17 @@ exports.createProject = async (req, res, next) => {
             thesisfile,
         } = req.body
 
+        //find Program type
+        const findProposedFee = await ProgramTypeModel.findOne({
+            programName: programType,
+        })
+
+        if (!findProposedFee) {
+            const error = new Error('Create/Check Program Type')
+            error.statusCode = 404
+            throw error
+        }
+
         console.log('scannedForm', scannedForm)
         const student = new StudentModel({
             _id: mongoose.Types.ObjectId(),
@@ -58,12 +70,16 @@ exports.createProject = async (req, res, next) => {
         const savedStudent = await student.save()
 
         let supervisors = [
-            supervisor1 !== undefined && {
-                name: supervisor1,
-            },
-            supervisor2 !== undefined && {
-                name: supervisor2,
-            },
+            supervisor1 !== undefined && supervisor1
+                ? {
+                      name: supervisor1,
+                  }
+                : null,
+            supervisor2 !== undefined && supervisor2
+                ? {
+                      name: supervisor2,
+                  }
+                : null,
         ]
 
         const project = new ProjectModel({
@@ -77,6 +93,7 @@ exports.createProject = async (req, res, next) => {
                 },
             ],
             student: savedStudent._id,
+            proposedFee: findProposedFee.programFee,
         })
 
         let savedProject = await project.save()
@@ -105,9 +122,9 @@ exports.createProject = async (req, res, next) => {
         if (thesisfile !== null) {
             const file = new ProjectFileModel({
                 _id: mongoose.Types.ObjectId(),
-                fileName: scannedForm.name,
-                fileExtension: scannedForm.ext,
-                fileData: scannedForm.buffer,
+                fileName: thesisfile.name,
+                fileExtension: thesisfile.ext,
+                fileData: thesisfile.buffer,
                 description: 'thesisfile',
             })
 
@@ -191,7 +208,7 @@ exports.getIndividualProjects = async (req, res, next) => {
         let getProject = await ProjectModel.findById(id).populate(
             'student examiners.examinerId examiners.projectAppointmentLetter examinerReports.reportId files.fileId'
         )
-       // console.log(getProject)
+        // console.log(getProject)
 
         if (!getProject) {
             const error = new Error('Project not found')
