@@ -2,6 +2,7 @@ const express = require('express')
 const cors = require('cors')
 const mongoose = require('mongoose')
 const socketio = require('socket.io')
+const bodyparser = require('body-parser')
 
 const app = express()
 
@@ -14,10 +15,11 @@ const tagRoutes = require('./api/routes/tags')
 const preferenceRoutes = require('./api/routes/preferences')
 const reportRoutes = require('./api/routes/examinerReports')
 const paymentRoutes = require('./api/routes/payments')
+const documentRoutes = require('./api/routes/documents')
 //apply middleware
 app.use(cors())
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
+app.use(bodyparser.json())
+app.use(bodyparser.urlencoded({ extended: true }))
 
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*')
@@ -53,6 +55,7 @@ app.use('/tags', tagRoutes)
 app.use('/preferences', preferenceRoutes)
 app.use('/reports', reportRoutes)
 app.use('/payments', paymentRoutes)
+app.use('/docs', documentRoutes)
 /** global error handling */
 app.use((error, req, res, next) => {
     const status = error.statusCode || 500
@@ -66,13 +69,13 @@ app.use((error, req, res, next) => {
 mongoose.Promise = require('bluebird')
 
 mongoose
-    .connect(process.env.MONGO_L_URL, {
+    .connect(process.env.MONGO_R_URL, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
     })
     .then((result) => {
         //run on port
-        const port = process.env.PORT || 6000
+        const port = process.env.PORT || 8000
 
         const server = app.listen(port)
 

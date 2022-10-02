@@ -7,6 +7,7 @@ const PaymentModel = require('../models/payments')
 exports.updateExaminerReport = async (req, res, next) => {
     try {
         const reportId = req.params.rid
+        console.log(req.file, 'req.files')
 
         const { score, remarks, ungraded, reportFile } = req.body
 
@@ -38,7 +39,7 @@ exports.updateExaminerReport = async (req, res, next) => {
             findReport.examiner.typeOfExaminer === 'External'
         ) {
             const payment = new PaymentModel({
-                _id: mongoose.Types.ObjectId(),
+                _id: new mongoose.Types.ObjectId(),
                 student: findReport.projectId.student,
                 proposedFee: findReport.projectId.proposedFee,
                 examiner: findReport.examiner._id,
@@ -47,29 +48,60 @@ exports.updateExaminerReport = async (req, res, next) => {
             })
 
             let paymentSaved = await payment.save()
+            paymentSaved.payCode = paymentSaved._id
+                .toString()
+                .split('')
+                .slice(19)
+                .join('')
+            await paymentSaved.save()
             findReport.payment = paymentSaved._id
             await findReport.save()
         } else {
         }
 
-        const saveFile = new ReportFileModel({
-            _id: mongoose.Types.ObjectId(),
-            fileName: reportFile.name,
-            fileExtension: reportFile.ext,
-            fileType: reportFile.fileType,
-            fileSize: reportFile.fileSize,
-            fileData: reportFile.buffer,
-            description: 'Report File',
-        })
+        if (req.file) {
+            const saveFile = new ReportFileModel({
+                _id: new mongoose.Types.ObjectId(),
+                fileId: req.file.id,
+                fileName: req.file.filename,
+                fileExtension: req.file.mimetype,
+                fileType: req.file.mimetype,
+                fileSize: req.file.size,
 
-        let savedFiles = await saveFile.save()
+                description: 'Report File',
+            })
 
-        findReport.reportFiles = [
-            ...findReport.reportFiles,
-            { files: savedFiles._id },
-        ]
+            let savedFiles = await saveFile.save()
 
-        await findReport.save()
+            findReport.reportFiles = [
+                ...findReport.reportFiles,
+                { files: savedFiles._id },
+            ]
+            await findReport.save()
+        } else {
+        }
+
+        // if (reportFile !== null) {
+        //     const saveFile = new ReportFileModel({
+        //         _id: new mongoose.Types.ObjectId(),
+        //         fileName: reportFile.name,
+        //         fileExtension: reportFile.ext,
+        //         fileType: reportFile.fileType,
+        //         fileSize: reportFile.fileSize,
+        //         fileData: reportFile.buffer,
+        //         description: 'Report File',
+        //     })
+
+        //     let savedFiles = await saveFile.save()
+
+        //     findReport.reportFiles = [
+        //         ...findReport.reportFiles,
+        //         { files: savedFiles._id },
+        //     ]
+        //     await findReport.save()
+        // } else {
+        // }
+
         res.status(200).json('updated report')
     } catch (error) {
         if (!error.statusCode) {

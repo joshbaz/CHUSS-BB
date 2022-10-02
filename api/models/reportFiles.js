@@ -1,7 +1,8 @@
-const mongoose = require('mongoose');
+const mongoose = require('mongoose')
 
 const reportFileSchema = mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
+    fileId: String,
     fileName: String,
     fileExtension: String,
     fileType: String,
@@ -10,4 +11,4 @@ const reportFileSchema = mongoose.Schema({
     originalName: String,
     description: String,
 })
-module.exports = mongoose.model("reportFiles", reportFileSchema)
+module.exports = mongoose.model('reportFiles', reportFileSchema)

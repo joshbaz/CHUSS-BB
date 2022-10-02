@@ -41,7 +41,7 @@ const paymentSchema = mongoose.Schema(
             ref: 'projectFiles',
         },
     },
-    { timestamp: true }
+    { timestamps: true }
 )
 
 module.exports = mongoose.model('payments', paymentSchema)

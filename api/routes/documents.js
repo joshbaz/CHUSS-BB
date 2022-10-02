@@ -1,12 +1,14 @@
 const express = require('express')
+const mongoose = require('mongoose')
 const router = express.Router()
-const projectController = require('../controllers/project')
 const multer = require('multer')
+let mongo = require('mongodb')
 const { GridFsStorage } = require('multer-gridfs-storage')
+var Grid = require('gridfs-stream')
+//Grid.mongo = mongoose.mongo
 
 const path = require('path')
 const crypto = require('crypto')
-const mongoose = require('mongoose')
 
 require('dotenv').config()
 const mongoUri = process.env.MONGO_L_URL
@@ -17,10 +19,50 @@ const conn = mongoose.createConnection(mongoUri, {
 })
 
 let gfs
-
+let gridfsBucket
 conn.once('open', () => {
-    gfs = new mongoose.mongo.GridFSBucket(conn.db, {
-        bucketName: 'projectFiless',
+    gridfsBucket = new mongoose.mongo.GridFSBucket(conn.db, {
+        bucketName: 'reportFiless',
+    })
+
+    gfs = Grid(conn.db, mongo)
+    gfs.collection('reportFiless')
+    // gfs = Grid(conn.db)
+    // gfs.collection('reportFiless')
+
+    router.get('/files/:id', (req, res) => {
+        const id = req.params.id
+        if (!id || id === 'undefined')
+            return res.status(400).send('no document found')
+        const _id = new mongoose.Types.ObjectId(id)
+        gfs.files.find({ _id }).toArray((err, files) => {
+            console.log('files', files)
+            if (!files || files.length === 0)
+                return res.status(400).send('no files exists')
+
+            let data = []
+            // let readstream = gridfsBucket.createReadStream({
+            //     filename: files[0].filename,
+            // })
+
+            let readstream = gridfsBucket.openDownloadStream(_id)
+            console.log('readStream', readstream)
+            readstream.on('data', function (chunk) {
+                data.push(chunk)
+            })
+
+            readstream.on('end', function () {
+                data = Buffer.concat(data)
+                let fileOutput =
+                    `data:${files[0].contentType};base64,` +
+                    Buffer(data).toString('base64')
+                res.end(fileOutput)
+            })
+
+            // res.set('Content-Type', files[0].contentType)
+            // return readstream.pipe(res)
+            //gridfsBucket.openDownloadStream(_id).pipe(res)
+        })
     })
 })
 
@@ -39,7 +81,7 @@ const storage = new GridFsStorage({
                     buf.toString('hex') + path.extname(file.originalname)
                 const fileInfo = {
                     filename: filename,
-                    bucketName: 'projectFiless',
+                    bucketName: 'reportFiless',
                     metadata: req.body,
                 }
                 resolve(fileInfo)
@@ -78,31 +120,5 @@ const uploadMiddleware = (req, res, next) => {
         next()
     })
 }
-
-router.post('/v1/create', uploadMiddleware, projectController.createProject)
-
-router.get('/vl/pprojects', projectController.getPaginatedProjects)
-
-router.get('/v1/projects/:id', projectController.getIndividualProjects)
-
-//DeleteFiles
-const deleteFile = (id) => {
-    if (!id || id === 'undefined') return res.status(400).send('no file found')
-    const _id = new mongoose.Types.ObjectId(id)
-    gfs.delete(_id, (err) => {
-        if (err) return res.status(500).send('File deletion error')
-    })
-}
-
-router.get('/files/:id', (req, res) => {
-    const id = req.params.id
-    if (!id || id === 'undefined') return res.status(400).send('no file found')
-    const _id = new mongoose.Types.ObjectId(id)
-    gfs.find({ _id }).toArray((err, files) => {
-        if (!files || files.length === 0)
-            return res.status(400).send('no files exists')
-        gfs.openDownloadStream(_id).pipe(res);
-    })
-})
 
 module.exports = router
