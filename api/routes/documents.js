@@ -11,7 +11,7 @@ const path = require('path')
 const crypto = require('crypto')
 
 require('dotenv').config()
-const mongoUri = process.env.MONGO_L_URL
+const mongoUri = process.env.MONGO_R_URL
 
 const conn = mongoose.createConnection(mongoUri, {
     useNewUrlParser: true,
