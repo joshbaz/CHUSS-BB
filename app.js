@@ -81,7 +81,7 @@ mongoose
 
         if (server) {
             console.log('successfully running on port:', port)
-            console.log('connected to database:', result.connections[0].name)
+           // console.log('connected to database:', result.connections[0].name)
         } else {
             console.log('failed to run ', port)
         }
