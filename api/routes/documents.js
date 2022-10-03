@@ -128,4 +128,47 @@ router.get('/files/:id', (req, res) => {
     })
 })
 
+
+router.get('/download/:id', (req, res) => {
+    const id = req.params.id
+    if (!id || id === 'undefined')
+        return res.status(400).send('no document found')
+    const _id = new mongoose.Types.ObjectId(id)
+    gfs.files.find({ _id }).toArray((err, files) => {
+        console.log('files', files)
+        if (!files || files.length === 0)
+            return res.status(400).send('no files exists')
+
+        let data = []
+        // let readstream = gridfsBucket.createReadStream({
+        //     filename: files[0].filename,
+        // })
+
+        let readstream = gridfsBucket.openDownloadStream(_id)
+        console.log('readStream', readstream)
+        readstream.on('data', function (chunk) {
+            data.push(chunk)
+        })
+        readstream.on('error', function () {
+            res.end()
+        })
+
+        readstream.on('end', function () {
+            data = Buffer.concat(data)
+            let fileOutput =
+                `data:${files[0].contentType};base64,` +
+                Buffer(data).toString('base64')
+            res.end(fileOutput)
+        })
+
+        // res.set('Content-Type', files[0].contentType)
+        // res.set(
+        //     'Content-Disposition',
+        //     'attachment; filename="' + files[0].originalname + '"'
+        // )
+        // return readstream.pipe(res)
+        //gridfsBucket.openDownloadStream(_id).pipe(res)
+    })
+})
+
 module.exports = router
