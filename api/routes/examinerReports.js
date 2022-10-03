@@ -21,9 +21,9 @@ const conn = mongoose.createConnection(mongoUri, {
 let gfs
 
 conn.once('open', () => {
-     gfs = new mongoose.mongo.GridFSBucket(conn.db, {
-         bucketName: 'reportFiless',
-     })
+    gfs = new mongoose.mongo.GridFSBucket(conn.db, {
+        bucketName: 'reportFiless',
+    })
 })
 
 const storage = new GridFsStorage({
@@ -32,7 +32,7 @@ const storage = new GridFsStorage({
         useUnifiedTopology: true,
     },
     file: (req, file) => {
-        console.log(file, 'fs',req.body.score)
+        console.log(file, 'fs', req.body.score)
         return new Promise((resolve, reject) => {
             crypto.randomBytes(16, (err, buf) => {
                 if (err) {
@@ -41,9 +41,12 @@ const storage = new GridFsStorage({
                 }
                 const filename =
                     buf.toString('hex') + path.extname(file.originalname)
+                const filesExtenstions = path.extname(file.originalname)
+                console.log('extensiond', path.extname(file.originalname))
                 const fileInfo = {
                     filename: filename,
                     bucketName: 'reportFiless',
+                    filesExtensions: filesExtenstions,
                     metadata: req.body,
                 }
                 resolve(fileInfo)
@@ -71,7 +74,7 @@ const uploadMiddleware = (req, res, next) => {
                 return res.status(400).send('Documents only')
             return res.sendStatus(500)
         }
-         next()
+        next()
     })
 }
 router.patch(

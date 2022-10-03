@@ -128,7 +128,6 @@ router.get('/files/:id', (req, res) => {
     })
 })
 
-
 router.get('/download/:id', (req, res) => {
     const id = req.params.id
     if (!id || id === 'undefined')
@@ -155,13 +154,16 @@ router.get('/download/:id', (req, res) => {
 
         readstream.on('end', function () {
             data = Buffer.concat(data)
-            let fileOutput =
-                `data:${files[0].contentType};base64,` +
-                Buffer(data).toString('base64')
-            res.end(fileOutput)
+            // let fileOutput =
+            //     `data:${files[0].contentType};base64,` +
+            //     Buffer(data).toString('base64')
+
+            let fileOutput = Buffer(data).toString('base64')
+            let extension = path.extname(files[0].filename).slice(1)
+            res.set('Content-Type', files[0].contentType)
+            res.status(200).json({ data: fileOutput, extension })
         })
 
-        // res.set('Content-Type', files[0].contentType)
         // res.set(
         //     'Content-Disposition',
         //     'attachment; filename="' + files[0].originalname + '"'

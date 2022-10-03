@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 const ExaminerReportModel = require('../models/examinerReports')
 const ReportFileModel = require('../models/reportFiles')
 const PaymentModel = require('../models/payments')
-
+const path = require('path')
 /** update ExaminerReport */
 exports.updateExaminerReport = async (req, res, next) => {
     try {
@@ -60,11 +60,14 @@ exports.updateExaminerReport = async (req, res, next) => {
         }
 
         if (req.file) {
+            const filesExtenstions = path
+                .extname(req.file.originalname)
+                .slice(1)
             const saveFile = new ReportFileModel({
                 _id: new mongoose.Types.ObjectId(),
                 fileId: req.file.id,
-                fileName: req.file.filename,
-                fileExtension: req.file.mimetype,
+                fileName: 'reportFile',
+                fileExtension: filesExtenstions,
                 fileType: req.file.mimetype,
                 fileSize: req.file.size,
 
