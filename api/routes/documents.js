@@ -119,6 +119,10 @@ router.get('/files/:id', (req, res) => {
         })
 
         res.set('Content-Type', files[0].contentType)
+        res.set(
+            'Content-Disposition',
+            'attachment; filename="' + files[0].originalname + '"'
+        )
         return readstream.pipe(res)
         //gridfsBucket.openDownloadStream(_id).pipe(res)
     })
