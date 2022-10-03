@@ -106,6 +106,9 @@ router.get('/files/:id', (req, res) => {
         readstream.on('data', function (chunk) {
             data.push(chunk)
         })
+        readstream.on('error', function () {
+            res.end()
+        })
 
         readstream.on('end', function () {
             data = Buffer.concat(data)
@@ -115,8 +118,8 @@ router.get('/files/:id', (req, res) => {
             res.end(fileOutput)
         })
 
-        // res.set('Content-Type', files[0].contentType)
-        // return readstream.pipe(res)
+        res.set('Content-Type', files[0].contentType)
+        return readstream.pipe(res)
         //gridfsBucket.openDownloadStream(_id).pipe(res)
     })
 })
