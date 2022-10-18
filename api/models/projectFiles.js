@@ -3,6 +3,7 @@ const mongoose = require('mongoose')
 const projectFileSchema = mongoose.Schema(
     {
         _id: mongoose.Schema.Types.ObjectId,
+        fileId: String,
         fileName: String,
         fileExtension: String,
         fileType: String,

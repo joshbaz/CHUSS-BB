@@ -16,6 +16,7 @@ const preferenceRoutes = require('./api/routes/preferences')
 const reportRoutes = require('./api/routes/examinerReports')
 const paymentRoutes = require('./api/routes/payments')
 const documentRoutes = require('./api/routes/documents')
+const opponentRoutes = require('./api/routes/opponent')
 //apply middleware
 app.use(cors())
 app.use(bodyparser.json())
@@ -56,6 +57,7 @@ app.use('/preferences', preferenceRoutes)
 app.use('/reports', reportRoutes)
 app.use('/payments', paymentRoutes)
 app.use('/docs', documentRoutes)
+app.use('/opponent', opponentRoutes)
 /** global error handling */
 app.use((error, req, res, next) => {
     const status = error.statusCode || 500
@@ -81,7 +83,7 @@ mongoose
 
         if (server) {
             console.log('successfully running on port:', port)
-           // console.log('connected to database:', result.connections[0].name)
+            // console.log('connected to database:', result.connections[0].name)
         } else {
             console.log('failed to run ', port)
         }

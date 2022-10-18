@@ -20,7 +20,7 @@ let gfs
 
 conn.once('open', () => {
     gfs = new mongoose.mongo.GridFSBucket(conn.db, {
-        bucketName: 'projectFiless',
+        bucketName: 'chussfiles',
     })
 })
 
@@ -37,10 +37,18 @@ const storage = new GridFsStorage({
                 }
                 const filename =
                     buf.toString('hex') + path.extname(file.originalname)
+                const filesExtenstions = path.extname(file.originalname)
+                const extractNameOnly = path.basename(
+                    file.originalname,
+                    filesExtenstions
+                )
                 const fileInfo = {
                     filename: filename,
-                    bucketName: 'projectFiless',
-                    metadata: req.body,
+                    bucketName: 'chussfiles',
+                    filesExtensions: filesExtenstions,
+                    metadata: {
+                        name: extractNameOnly,
+                    },
                 }
                 resolve(fileInfo)
             })
@@ -66,8 +74,10 @@ const store = multer({
 // }
 
 const uploadMiddleware = (req, res, next) => {
-    const upload = store.single('file')
+    const upload = store.array('projectFiles')
+    console.log('upload', upload)
     upload(req, res, function (err) {
+        console.log('we are here')
         if (err instanceof multer.MulterError) {
             return res.status(400).send('File too large')
         } else if (err) {
@@ -81,9 +91,46 @@ const uploadMiddleware = (req, res, next) => {
 
 router.post('/v1/create', uploadMiddleware, projectController.createProject)
 
+router.patch(
+    '/v1/update/:id',
+    uploadMiddleware,
+    projectController.updateProject
+)
+/** project status update */
+router.put('/vl/status/update/:id', projectController.updateProjectStatus)
+
 router.get('/vl/pprojects', projectController.getPaginatedProjects)
 
 router.get('/v1/projects/:id', projectController.getIndividualProjects)
+
+/** final submission */
+router.put(
+    '/v1/finalsubmission/update/:id',
+    uploadMiddleware,
+    projectController.putFinalSubmissionFiles
+)
+
+/** viva files */
+router.put(
+    '/v1/vivafiles/update/:id',
+    uploadMiddleware,
+    projectController.putVivaFiles
+)
+
+/** viva files */
+router.put('/v1/vivadefense/update/:id', projectController.updateVivaDefense)
+
+/** date of final submission */
+router.put(
+    '/v1/dateofsubmission/update/:id',
+    projectController.updateDateOfFinalSubmission
+)
+
+/** date of final submission */
+router.put(
+    '/v1/graduation/update/:id',
+    projectController.updateDateOfGraduation
+)
 
 //DeleteFiles
 const deleteFile = (id) => {
@@ -101,7 +148,7 @@ router.get('/files/:id', (req, res) => {
     gfs.find({ _id }).toArray((err, files) => {
         if (!files || files.length === 0)
             return res.status(400).send('no files exists')
-        gfs.openDownloadStream(_id).pipe(res);
+        gfs.openDownloadStream(_id).pipe(res)
     })
 })
 

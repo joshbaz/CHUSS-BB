@@ -99,44 +99,60 @@ exports.createProjectExaminer = async (req, res, next) => {
         }
 
         /** save the examiner general appointment File */
-        if (examinerAppLetter !== null) {
-            const file = new ProjectFileModel({
-                _id: mongoose.Types.ObjectId(),
-                fileName: examinerAppLetter.name,
-                fileExtension: examinerAppLetter.ext,
-                fileType: examinerAppLetter.fileType,
-                fileSize: examinerAppLetter.fileSize,
-                fileData: examinerAppLetter.buffer,
-                description: 'General Appointment Letter',
-            })
+        if (req.files) {
+            for (let iteration = 0; iteration < req.files.length; iteration++) {
+                //scanned Form
+                if (
+                    req.files[iteration].metadata.name === 'examinerAppLetter'
+                ) {
+                    const filesExtenstions = path
+                        .extname(req.files[iteration].originalname)
+                        .slice(1)
+                    const saveFile = new ProjectFileModel({
+                        _id: mongoose.Types.ObjectId(),
+                        fileId: req.files[iteration].id,
+                        fileName: req.files[iteration].metadata.name,
+                        fileExtension: filesExtenstions,
+                        fileType: req.files[iteration].mimetype,
+                        fileSize: req.files[iteration].size,
+                        description: 'examinerAppLetter',
+                    })
 
-            let savedFile = await file.save()
+                    let savedFiles = await saveFile.save()
 
-            savedExaminer.generalAppointmentLetters = [
-                ...savedExaminer.generalAppointmentLetters,
-                {
-                    fileId: savedFile._id,
-                },
-            ]
-            await savedExaminer.save()
-        } else {
-        }
+                    savedExaminer.generalAppointmentLetters = [
+                        ...savedExaminer.generalAppointmentLetters,
+                        {
+                            fileId: savedFiles._id,
+                        },
+                    ]
+                    examinerToSave.generalAppointmentLetters = savedFiles._id
 
-        /** save the examiner appointmentFile */
-        if (projectAppLetter !== null) {
-            const file = new ProjectFileModel({
-                _id: mongoose.Types.ObjectId(),
-                fileName: projectAppLetter.name,
-                fileExtension: projectAppLetter.ext,
-                fileType: projectAppLetter.fileType,
-                fileSize: projectAppLetter.fileSize,
-                fileData: projectAppLetter.buffer,
-                description: 'Project Appointment Letter',
-            })
+                    await savedExaminer.save()
+                }
 
-            let savedFile = await file.save()
+                //thesisfile
+                if (
+                    req.files[iteration].metadata.name === 'projectAppLetter'
+                ) {
+                    const filesExtenstions = path
+                        .extname(req.files[iteration].originalname)
+                        .slice(1)
+                    const saveFile = new ProjectFileModel({
+                        _id: mongoose.Types.ObjectId(),
+                        fileId: req.files[iteration].id,
+                        fileName: req.files[iteration].metadata.name,
+                        fileExtension: filesExtenstions,
+                        fileType: req.files[iteration].mimetype,
+                        fileSize: req.files[iteration].size,
+                        description: 'projectAppLetter',
+                    })
 
-            examinerToSave.projectAppointmentLetter = savedFile._id
+                    let savedFiles = await saveFile.save()
+
+                    examinerToSave.projectAppointmentLetter = savedFiles._id
+                }
+            }
         } else {
         }
 

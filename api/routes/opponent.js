@@ -1,10 +1,8 @@
 const express = require('express')
 const router = express.Router()
-const examinerReport = require('../controllers/examinerReports')
-
+const opponentController = require('../controllers/opponent')
 const multer = require('multer')
 const { GridFsStorage } = require('multer-gridfs-storage')
-const Grid = require('gridfs-stream')
 
 const path = require('path')
 const crypto = require('crypto')
@@ -32,22 +30,25 @@ const storage = new GridFsStorage({
         useUnifiedTopology: true,
     },
     file: (req, file) => {
-        console.log(file, 'fs', req.body.score)
         return new Promise((resolve, reject) => {
             crypto.randomBytes(16, (err, buf) => {
                 if (err) {
-                    console.log('errors', err)
                     return reject(err)
                 }
                 const filename =
                     buf.toString('hex') + path.extname(file.originalname)
                 const filesExtenstions = path.extname(file.originalname)
-                console.log('extensiond', path.extname(file.originalname))
+                const extractNameOnly = path.basename(
+                    file.originalname,
+                    filesExtenstions
+                )
                 const fileInfo = {
                     filename: filename,
                     bucketName: 'chussfiles',
                     filesExtensions: filesExtenstions,
-                    metadata: req.body,
+                    metadata: {
+                        name: extractNameOnly,
+                    },
                 }
                 resolve(fileInfo)
             })
@@ -62,8 +63,18 @@ const store = multer({
     // },
 })
 
+// function checkFileType(file, cb) {
+//     const filetypes = /pdf|jpg|png|gif/
+//     const extname = filetypes.test(
+//         path.extname(file.originalname).toLowerCase()
+//     )
+//     const mimetype = filetypes.test(file.mimetype)
+//     if (mimetype && extname) return cb(null, true)
+//     cb('filetype')
+// }
+
 const uploadMiddleware = (req, res, next) => {
-    const upload = store.single('reportssFiles')
+    const upload = store.array('projectFiles')
     console.log('upload', upload)
     upload(req, res, function (err) {
         console.log('we are here')
@@ -77,10 +88,22 @@ const uploadMiddleware = (req, res, next) => {
         next()
     })
 }
-router.patch(
-    '/v1/update/:rid',
+
+router.post(
+    '/v1/project/create/:pid',
     uploadMiddleware,
-    examinerReport.updateExaminerReport
+    opponentController.createProjectOpponent
 )
-router.get('/v1/getReport/:rid', examinerReport.getExaminerReport)
+
+router.post('/v1/project/assign/:pid', opponentController.assignOpponent)
+
+/** get all opponent */
+router.get('/v1/getall', opponentController.getAllOpponents)
+
+/** get individual opponent */
+router.get('/v1/individual/:id', opponentController.getIndividualOpponent)
+
+/** get paginated examiners */
+router.get('/v1/popponents', opponentController.getPaginatedOpponents)
+
 module.exports = router

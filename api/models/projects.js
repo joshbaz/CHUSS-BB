@@ -16,6 +16,14 @@ const projectSchema = mongoose.Schema(
             {
                 status: String,
                 notes: String,
+                completed: {
+                    type: Boolean,
+                    default: false,
+                },
+                active: {
+                    type: Boolean,
+                    default: false,
+                },
                 current: Boolean,
                 createdAt: Date,
                 updatedAt: Date,
@@ -56,6 +64,51 @@ const projectSchema = mongoose.Schema(
                 },
             },
         ],
+
+        opponents: [
+            {
+                opponentId: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: 'opponents',
+                },
+                projectAppointmentLetter: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: 'projectFiles',
+                },
+                generalAppointmentLetter: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: 'projectFiles',
+                },
+                prefferedPayment: String,
+            },
+        ],
+
+        vivaFiles: [
+            {
+                fileId: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: 'projectFiles',
+                },
+            },
+        ],
+
+        DateOfDefense: {
+            type: String,
+        },
+        FinalSubmissionFiles: [
+            {
+                fileId: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: 'projectFiles',
+                },
+            },
+        ],
+        FinalSubmissionDate: {
+            type: String,
+        },
+        GraduationDate: {
+            type: String,
+        },
     },
     { timestamps: true }
 )
