@@ -84,6 +84,16 @@ mongoose
         if (server) {
             console.log('successfully running on port:', port)
             // console.log('connected to database:', result.connections[0].name)
+            const io = require('./socket').init(server, {
+                origins: ['*'],
+            })
+
+            io.on('connection', (socket) => {
+                console.log('client connected')
+                socket.on('disconnect', () => {
+                    console.log('user disconnected')
+                })
+            })
         } else {
             console.log('failed to run ', port)
         }

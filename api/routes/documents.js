@@ -22,11 +22,11 @@ let gfs
 let gridfsBucket
 conn.once('open', () => {
     gridfsBucket = new mongoose.mongo.GridFSBucket(conn.db, {
-        bucketName: 'reportFiless',
+        bucketName: 'chussfiles',
     })
 
     gfs = Grid(conn.db, mongo)
-    gfs.collection('reportFiless')
+    gfs.collection('chussfiles')
     // gfs = Grid(conn.db)
     // gfs.collection('reportFiless')
 })
@@ -46,7 +46,7 @@ const storage = new GridFsStorage({
                     buf.toString('hex') + path.extname(file.originalname)
                 const fileInfo = {
                     filename: filename,
-                    bucketName: 'reportFiless',
+                    bucketName: 'chussfiles',
                     metadata: req.body,
                 }
                 resolve(fileInfo)
@@ -92,7 +92,7 @@ router.get('/files/:id', (req, res) => {
         return res.status(400).send('no document found')
     const _id = new mongoose.Types.ObjectId(id)
     gfs.files.find({ _id }).toArray((err, files) => {
-        console.log('files', files)
+        //console.log('files', files)
         if (!files || files.length === 0)
             return res.status(400).send('no files exists')
 
@@ -102,7 +102,7 @@ router.get('/files/:id', (req, res) => {
         // })
 
         let readstream = gridfsBucket.openDownloadStream(_id)
-        console.log('readStream', readstream)
+       // console.log('readStream', readstream)
         readstream.on('data', function (chunk) {
             data.push(chunk)
         })
@@ -134,7 +134,7 @@ router.get('/download/:id', (req, res) => {
         return res.status(400).send('no document found')
     const _id = new mongoose.Types.ObjectId(id)
     gfs.files.find({ _id }).toArray((err, files) => {
-        console.log('files', files)
+        //console.log('files', files)
         if (!files || files.length === 0)
             return res.status(400).send('no files exists')
 
@@ -144,7 +144,7 @@ router.get('/download/:id', (req, res) => {
         // })
 
         let readstream = gridfsBucket.openDownloadStream(_id)
-        console.log('readStream', readstream)
+        //console.log('readStream', readstream)
         readstream.on('data', function (chunk) {
             data.push(chunk)
         })
