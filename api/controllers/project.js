@@ -395,19 +395,68 @@ exports.updateProjectStatus = async (req, res, next) => {
             let alliteration = iteration + 1
 
             if (newDataArray[iteration].active === true) {
-                if (newDataArray[iteration].status !== status) {
+                if (
+                    newDataArray[iteration].status.toLowerCase() !==
+                    status.toLowerCase()
+                ) {
                     newDataArray[iteration].active = false
                     newDataArray[iteration].completed = true
+
+                    // findProject.projectStatus = [
+                    //     ...newDataArray,
+                    //     {
+                    //         status: status,
+                    //         notes: notes,
+                    //         active: true,
+                    //     },
+                    // ]
+
+                    // await findProject.save()
+                    // return res.status(200).json('status 3 updated')
                 } else {
                     newDataArray[iteration].notes = notes
 
                     findProject.projectStatus = [...newDataArray]
                     await findProject.save()
-                    return res.status(200).json('status updated')
+                    return res.status(200).json('status 2 updated')
                 }
             }
 
-            if (alliteration === newDataArray.length) {
+            if (
+                newDataArray[iteration].status.toLowerCase() ===
+                status.toLowerCase()
+            ) {
+                newDataArray[iteration].active = true
+                newDataArray[iteration].completed = false
+
+                let removedArray = newDataArray.splice(iteration + 1)
+                if (removedArray.length > 0) {
+                    let filteredArray = removedArray.filter((data) => {
+                        data.completed = false
+                        data.active = false
+                        return data
+                    })
+
+                    console.log('filtered data', filteredArray, newDataArray)
+
+                    findProject.projectStatus = [
+                        ...newDataArray,
+                        ...filteredArray,
+                    ]
+                    await findProject.save()
+                    return res.status(200).json('status 4 updated')
+                } else {
+                    findProject.projectStatus = [...newDataArray]
+                    await findProject.save()
+                    return res.status(200).json('status 3 updated')
+                }
+            }
+
+            if (
+                alliteration === newDataArray.length &&
+                newDataArray[iteration].status.toLowerCase() !==
+                    status.toLowerCase()
+            ) {
                 findProject.projectStatus = [
                     ...newDataArray,
                     {
@@ -418,7 +467,7 @@ exports.updateProjectStatus = async (req, res, next) => {
                 ]
 
                 await findProject.save()
-                res.status(200).json('status updated')
+                res.status(200).json('status 1 updated')
             }
         }
     } catch (error) {
@@ -484,7 +533,7 @@ exports.getIndividualProjects = async (req, res, next) => {
     try {
         const id = req.params.id
         let getProject = await ProjectModel.findById(id).populate(
-            'student examiners.examinerId examiners.projectAppointmentLetter examinerReports.reportId files.fileId'
+            'student examiners.examinerId examiners.projectAppointmentLetter examinerReports.reportId files.fileId vivaFiles.fileId'
         )
         // console.log(getProject)
 
@@ -518,58 +567,30 @@ exports.putVivaFiles = async (req, res, next) => {
         if (req.files) {
             for (let iteration = 0; iteration < req.files.length; iteration++) {
                 //scanned Form
-                if (req.files[iteration].metadata.name === 'AuthViva') {
-                    const filesExtenstions = path
-                        .extname(req.files[iteration].originalname)
-                        .slice(1)
-                    const saveFile = new ProjectFileModel({
-                        _id: mongoose.Types.ObjectId(),
-                        fileId: req.files[iteration].id,
-                        fileName: req.files[iteration].metadata.name,
-                        fileExtension: filesExtenstions,
-                        fileType: req.files[iteration].mimetype,
-                        fileSize: req.files[iteration].size,
-                        description: 'AuthViva',
-                    })
 
-                    let savedFiles = await saveFile.save()
+                const filesExtenstions = path
+                    .extname(req.files[iteration].originalname)
+                    .slice(1)
+                const saveFile = new ProjectFileModel({
+                    _id: mongoose.Types.ObjectId(),
+                    fileId: req.files[iteration].id,
+                    fileName: req.files[iteration].metadata.name,
+                    fileExtension: filesExtenstions,
+                    fileType: req.files[iteration].mimetype,
+                    fileSize: req.files[iteration].size,
+                    description: 'vivaFiles',
+                })
 
-                    findProject.vivaFiles = [
-                        ...findProject.vivaFiles,
-                        {
-                            fileId: savedFiles._id,
-                        },
-                    ]
+                let savedFiles = await saveFile.save()
 
-                    await findProject.save()
-                }
+                findProject.vivaFiles = [
+                    ...findProject.vivaFiles,
+                    {
+                        fileId: savedFiles._id,
+                    },
+                ]
 
-                //thesisfile
-                if (req.files[iteration].metadata.name === 'VivaMinutes') {
-                    const filesExtenstions = path
-                        .extname(req.files[iteration].originalname)
-                        .slice(1)
-                    const saveFile = new ProjectFileModel({
-                        _id: mongoose.Types.ObjectId(),
-                        fileId: req.files[iteration].id,
-                        fileName: req.files[iteration].metadata.name,
-                        fileExtension: filesExtenstions,
-                        fileType: req.files[iteration].mimetype,
-                        fileSize: req.files[iteration].size,
-                        description: 'VivaMinutes',
-                    })
-
-                    let savedFiles = await saveFile.save()
-
-                    findProject.vivaFiles = [
-                        ...findProject.vivaFiles,
-                        {
-                            fileId: savedFiles._id,
-                        },
-                    ]
-
-                    await findProject.save()
-                }
+                await findProject.save()
             }
         } else {
         }

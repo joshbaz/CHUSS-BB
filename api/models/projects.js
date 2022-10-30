@@ -93,7 +93,7 @@ const projectSchema = mongoose.Schema(
         ],
 
         DateOfDefense: {
-            type: String,
+            type: Date,
         },
         FinalSubmissionFiles: [
             {
