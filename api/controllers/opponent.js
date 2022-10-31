@@ -3,7 +3,7 @@ const ProjectModel = require('../models/projects')
 //const StudentModel = require('../models/students')
 const ProjectFileModel = require('../models/projectFiles')
 const OpponentModel = require('../models/opponents')
-
+const path = require('path')
 /** create opponent from project */
 exports.createProjectOpponent = async (req, res, next) => {
     try {
@@ -74,7 +74,7 @@ exports.createProjectOpponent = async (req, res, next) => {
         /** instance of an opponent */
 
         const opponent = new OpponentModel({
-            _id: mongoose.Types.ObjectId(),
+            _id: new mongoose.Types.ObjectId(),
             jobtitle,
             name,
             email,

@@ -504,7 +504,7 @@ exports.getPaginatedProjects = async (req, res, next) => {
             .skip((currentPage - 1) * perPages)
             .limit(perPages)
             .populate(
-                'student examiners.examinerId examiners.projectAppointmentLetter examinerReports.reportId files.fileId'
+                'student examiners.examinerId examiners.projectAppointmentLetter examinerReports.reportId files.fileId opponents.opponentId opponents.projectAppointmentLetter FinalSubmissionFiles.fileId'
             )
 
         let current_total = await ProjectModel.find()
@@ -533,7 +533,7 @@ exports.getIndividualProjects = async (req, res, next) => {
     try {
         const id = req.params.id
         let getProject = await ProjectModel.findById(id).populate(
-            'student examiners.examinerId examiners.projectAppointmentLetter examinerReports.reportId files.fileId vivaFiles.fileId'
+            'student examiners.examinerId examiners.projectAppointmentLetter examinerReports.reportId files.fileId vivaFiles.fileId opponents.opponentId opponents.projectAppointmentLetter FinalSubmissionFiles.fileId'
         )
         // console.log(getProject)
 
@@ -544,6 +544,58 @@ exports.getIndividualProjects = async (req, res, next) => {
         }
 
         res.status(200).json(getProject)
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500
+        }
+        next(error)
+    }
+}
+
+/** candidate files update */
+exports.putCandidateFiles = async (req, res, next) => {
+    try {
+        const projectId = req.params.id
+
+        const findProject = await ProjectModel.findById(projectId)
+        if (!findProject) {
+            const error = new Error('No project found')
+            error.statusCode = 404
+            throw error
+        }
+
+        if (req.files) {
+            for (let iteration = 0; iteration < req.files.length; iteration++) {
+                //scanned Form
+
+                const filesExtenstions = path
+                    .extname(req.files[iteration].originalname)
+                    .slice(1)
+                const saveFile = new ProjectFileModel({
+                    _id: mongoose.Types.ObjectId(),
+                    fileId: req.files[iteration].id,
+                    fileName: req.files[iteration].metadata.name,
+                    fileExtension: filesExtenstions,
+                    fileType: req.files[iteration].mimetype,
+                    fileSize: req.files[iteration].size,
+                    description: 'candidateFiles',
+                })
+
+                let savedFiles = await saveFile.save()
+
+                findProject.files = [
+                    ...findProject.files,
+                    {
+                        fileId: savedFiles._id,
+                    },
+                ]
+
+                await findProject.save()
+            }
+        } else {
+        }
+
+        res.status(201).json('updated candidate files')
     } catch (error) {
         if (!error.statusCode) {
             error.statusCode = 500
@@ -644,36 +696,35 @@ exports.putFinalSubmissionFiles = async (req, res, next) => {
         if (req.files) {
             for (let iteration = 0; iteration < req.files.length; iteration++) {
                 //scanned Form
-                if (req.files[iteration].metadata.name === 'finalSubmission') {
-                    const filesExtenstions = path
-                        .extname(req.files[iteration].originalname)
-                        .slice(1)
-                    const saveFile = new ProjectFileModel({
-                        _id: mongoose.Types.ObjectId(),
-                        fileId: req.files[iteration].id,
-                        fileName: req.files[iteration].metadata.name,
-                        fileExtension: filesExtenstions,
-                        fileType: req.files[iteration].mimetype,
-                        fileSize: req.files[iteration].size,
-                        description: 'finalSubmission',
-                    })
 
-                    let savedFiles = await saveFile.save()
+                const filesExtenstions = path
+                    .extname(req.files[iteration].originalname)
+                    .slice(1)
+                const saveFile = new ProjectFileModel({
+                    _id: mongoose.Types.ObjectId(),
+                    fileId: req.files[iteration].id,
+                    fileName: req.files[iteration].metadata.name,
+                    fileExtension: filesExtenstions,
+                    fileType: req.files[iteration].mimetype,
+                    fileSize: req.files[iteration].size,
+                    description: 'finalSubmission',
+                })
 
-                    findProject.FinalSubmissionFiles = [
-                        ...findProject.FinalSubmissionFiles,
-                        {
-                            fileId: savedFiles._id,
-                        },
-                    ]
+                let savedFiles = await saveFile.save()
 
-                    await findProject.save()
-                }
+                findProject.FinalSubmissionFiles = [
+                    ...findProject.FinalSubmissionFiles,
+                    {
+                        fileId: savedFiles._id,
+                    },
+                ]
+
+                await findProject.save()
             }
         } else {
         }
 
-        res.status(201).json('updated viva success')
+        res.status(201).json('updated final submit files success')
     } catch (error) {
         if (!error.statusCode) {
             error.statusCode = 500
@@ -720,7 +771,7 @@ exports.updateDateOfGraduation = async (req, res, next) => {
             throw error
         }
 
-        findProject.DateOfDefense = GraduationDate
+        findProject.GraduationDate = GraduationDate
         await findProject.save()
 
         res.status(201).json('updated graduation Date')

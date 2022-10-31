@@ -4,7 +4,7 @@ const ProjectModel = require('../models/projects')
 const ProjectFileModel = require('../models/projectFiles')
 const ExaminerModel = require('../models/examiners')
 const ExaminerReportModel = require('../models/examinerReports')
-
+const path = require('path')
 /** create Examiner From Project */
 exports.createProjectExaminer = async (req, res, next) => {
     try {

@@ -110,6 +110,13 @@ router.put(
     projectController.putFinalSubmissionFiles
 )
 
+/** candidate files */
+router.put(
+    '/v1/candidatefiles/update/:id',
+    uploadMiddleware,
+    projectController.putCandidateFiles
+)
+
 /** viva files */
 router.put(
     '/v1/vivafiles/update/:id',
