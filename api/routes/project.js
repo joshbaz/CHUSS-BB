@@ -75,7 +75,7 @@ const store = multer({
 
 const uploadMiddleware = (req, res, next) => {
     const upload = store.array('projectFiles')
-    console.log('upload', upload)
+    
     upload(req, res, function (err) {
         console.log('we are here')
         if (err instanceof multer.MulterError) {

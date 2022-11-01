@@ -3,6 +3,7 @@ const ProjectModel = require('../models/projects')
 //const StudentModel = require('../models/students')
 const ProjectFileModel = require('../models/projectFiles')
 const OpponentModel = require('../models/opponents')
+const OpponentReportModel = require('../models/opponentReports')
 const path = require('path')
 /** create opponent from project */
 exports.createProjectOpponent = async (req, res, next) => {
@@ -106,7 +107,7 @@ exports.createProjectOpponent = async (req, res, next) => {
                         .extname(req.files[iteration].originalname)
                         .slice(1)
                     const saveFile = new ProjectFileModel({
-                        _id: mongoose.Types.ObjectId(),
+                        _id: new mongoose.Types.ObjectId(),
                         fileId: req.files[iteration].id,
                         fileName: req.files[iteration].metadata.name,
                         fileExtension: filesExtenstions,
@@ -155,6 +156,31 @@ exports.createProjectOpponent = async (req, res, next) => {
 
         /** save the examiner to the project itself */
         findProject.opponents = [...findProject.opponents, opponentToSave]
+
+        await findProject.save()
+
+        /**
+         * instance of examiner Report since the examiner
+         * is now assigned to Project
+         * */
+
+        const opponentReport = new OpponentReportModel({
+            _id: mongoose.Types.ObjectId(),
+            projectId: findProject._id,
+            opponent: savedOpponent._id,
+            score: 0,
+            reportStatus: 'pending',
+        })
+
+        let savedReport = await opponentReport.save()
+
+        /** save the report detail to the project */
+        findProject.opponentReports = [
+            ...findProject.opponentReports,
+            {
+                reportId: savedReport._id,
+            },
+        ]
 
         await findProject.save()
 

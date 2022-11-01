@@ -42,6 +42,23 @@ const projectSchema = mongoose.Schema(
             ref: 'students',
         },
         proposedFee: Number,
+        supervisor: [
+            {
+                supervisorId: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: 'supervisorss',
+                },
+            },
+        ],
+        doctoralmembers: [
+            {
+                doctoralmemberId: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: 'doctoralmembers',
+                },
+            },
+        ],
+
         examiners: [
             {
                 examinerId: {
@@ -80,6 +97,15 @@ const projectSchema = mongoose.Schema(
                     ref: 'projectFiles',
                 },
                 prefferedPayment: String,
+            },
+        ],
+
+        opponentReports: [
+            {
+                reportId: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: 'opponentReports',
+                },
             },
         ],
 

@@ -17,6 +17,9 @@ const reportRoutes = require('./api/routes/examinerReports')
 const paymentRoutes = require('./api/routes/payments')
 const documentRoutes = require('./api/routes/documents')
 const opponentRoutes = require('./api/routes/opponent')
+const opponentReportRoutes = require('./api/routes/opponentReports')
+const supervisorRoutes = require('./api/routes/supervisors')
+const doctoralMemberRoutes = require('./api/routes/doctoralmembers')
 //apply middleware
 app.use(cors())
 app.use(bodyparser.json())
@@ -58,6 +61,9 @@ app.use('/reports', reportRoutes)
 app.use('/payments', paymentRoutes)
 app.use('/docs', documentRoutes)
 app.use('/opponent', opponentRoutes)
+app.use('/opponentreports', opponentReportRoutes)
+app.use('/supervisor', supervisorRoutes)
+app.use('/doctoralmember', doctoralMemberRoutes)
 /** global error handling */
 app.use((error, req, res, next) => {
     const status = error.statusCode || 500
