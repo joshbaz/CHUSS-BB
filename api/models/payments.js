@@ -26,6 +26,11 @@ const paymentSchema = mongoose.Schema(
             ref: 'examiners',
             required: true,
         },
+        opponent: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'opponents',
+            required: true,
+        },
         project: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'projects',
@@ -34,6 +39,11 @@ const paymentSchema = mongoose.Schema(
         report: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'examinerReports',
+            required: true,
+        },
+        opponentReport: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'opponentReports',
             required: true,
         },
         reciept: {

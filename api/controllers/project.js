@@ -504,7 +504,7 @@ exports.getPaginatedProjects = async (req, res, next) => {
             .skip((currentPage - 1) * perPages)
             .limit(perPages)
             .populate(
-                'student examiners.examinerId examiners.projectAppointmentLetter examinerReports.reportId files.fileId opponents.opponentId opponents.projectAppointmentLetter FinalSubmissionFiles.fileId'
+                'student examiners.examinerId examiners.projectAppointmentLetter examinerReports.reportId files.fileId opponents.opponentId opponentReports.reportId opponents.projectAppointmentLetter FinalSubmissionFiles.fileId supervisor.supervisorId doctoralmembers.doctoralmemberId'
             )
 
         let current_total = await ProjectModel.find()
@@ -533,7 +533,7 @@ exports.getIndividualProjects = async (req, res, next) => {
     try {
         const id = req.params.id
         let getProject = await ProjectModel.findById(id).populate(
-            'student examiners.examinerId examiners.projectAppointmentLetter examinerReports.reportId files.fileId vivaFiles.fileId opponents.opponentId opponents.projectAppointmentLetter FinalSubmissionFiles.fileId'
+            'student examiners.examinerId examiners.projectAppointmentLetter examinerReports.reportId files.fileId vivaFiles.fileId opponents.opponentId opponentReports.reportId opponents.projectAppointmentLetter FinalSubmissionFiles.fileId supervisor.supervisorId doctoralmembers.doctoralmemberId'
         )
         // console.log(getProject)
 

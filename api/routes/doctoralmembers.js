@@ -20,7 +20,7 @@ router.post(
 )
 
 /** get paginated examiners */
-router.get('/v1/psupervisors', doctoralController.getPaginatedMembers)
+router.get('/v1/pdcmembers', doctoralController.getPaginatedMembers)
 
 /** update examiners */
 router.patch('/v1/update/:id', doctoralController.updateCMember)

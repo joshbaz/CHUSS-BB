@@ -234,6 +234,32 @@ exports.assignOpponent = async (req, res, next) => {
             findProject.opponents = [...findProject.opponents, opponentToSave]
 
             await findProject.save()
+
+            /**
+             * instance of examiner Report since the examiner
+             * is now assigned to Project
+             * */
+
+            const opponentReport = new OpponentReportModel({
+                _id: mongoose.Types.ObjectId(),
+                projectId: findProject._id,
+                opponent: findOpponent._id,
+                score: 0,
+                reportStatus: 'pending',
+            })
+
+            let savedReport = await opponentReport.save()
+
+            /** save the report detail to the project */
+            findProject.opponentReports = [
+                ...findProject.opponentReports,
+                {
+                    reportId: savedReport._id,
+                },
+            ]
+
+            await findProject.save()
+
             if (titerations === items.length) {
                 res.status(201).json(
                     `${

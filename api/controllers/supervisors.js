@@ -13,7 +13,6 @@ exports.createProjectSupervisor = async (req, res, next) => {
             postalAddress,
             countryOfResidence,
             placeOfWork,
-            typeOfExaminer,
         } = req.body
         const projectId = req.params.pid
         const findProject = await ProjectModel.findById(projectId)

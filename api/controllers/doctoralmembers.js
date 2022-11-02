@@ -13,7 +13,7 @@ exports.createProjectDMember = async (req, res, next) => {
             postalAddress,
             countryOfResidence,
             placeOfWork,
-            typeOfExaminer,
+           
         } = req.body
         const projectId = req.params.pid
         const findProject = await ProjectModel.findById(projectId)
@@ -100,7 +100,7 @@ exports.assignMember = async (req, res, next) => {
                     `${
                         items.length > 1
                             ? 'Committee members'
-                            : 'Committee members'
+                            : 'Committee member'
                     }  has been successfully assigned`
                 )
             }

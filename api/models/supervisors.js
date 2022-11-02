@@ -18,4 +18,4 @@ const supervisorsSchema = mongoose.Schema(
     { timestamps: true }
 )
 
-module.exports = mongoose.model('supervisorss', supervisorsSchema)
+module.exports = mongoose.model('supervisors', supervisorsSchema)

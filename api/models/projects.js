@@ -46,7 +46,7 @@ const projectSchema = mongoose.Schema(
             {
                 supervisorId: {
                     type: mongoose.Schema.Types.ObjectId,
-                    ref: 'supervisorss',
+                    ref: 'supervisors',
                 },
             },
         ],
