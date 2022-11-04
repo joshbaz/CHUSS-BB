@@ -40,7 +40,7 @@ exports.updateOpponentReport = async (req, res, next) => {
         const reportId = req.params.rid
         console.log(req.file, 'req.files')
 
-        const { score, remarks, ungraded, reportFile } = req.body
+        //const { score, remarks, ungraded, reportFile } = req.body
 
         const findReport = await OpponentReportModel.findById(
             reportId
@@ -52,18 +52,18 @@ exports.updateOpponentReport = async (req, res, next) => {
             throw error
         }
 
-        findReport.score = score
-        findReport.marked = score ? true : false
-        findReport.reportStatus = score > 59 ? 'Passed' : 'failed'
+       
+        findReport.marked =  true 
+        findReport.reportStatus = 'Passed'
         await findReport.save()
 
         const payment = new PaymentModel({
             _id: new mongoose.Types.ObjectId(),
             student: findReport.projectId.student,
             proposedFee: findReport.projectId.proposedFee,
-            examiner: findReport.examiner._id,
+            opponent: findReport.opponent._id,
             project: findReport.projectId._id,
-            report: findReport._id,
+            opponentReport: findReport._id,
         })
 
         let paymentSaved = await payment.save()
@@ -91,11 +91,11 @@ exports.updateOpponentReport = async (req, res, next) => {
                         .slice(1)
                     const saveFile = new ReportFileModel({
                         _id: new mongoose.Types.ObjectId(),
-                        fileId: req.files.id,
-                        fileName: req.files.metadata.name,
+                        fileId: req.file.id,
+                        fileName: req.file.metadata.name,
                         fileExtension: filesExtenstions,
-                        fileType: req.files.mimetype,
-                        fileSize: req.files.size,
+                        fileType: req.file.mimetype,
+                        fileSize: req.file.size,
 
                         description: 'Report File',
                     })
@@ -111,11 +111,11 @@ exports.updateOpponentReport = async (req, res, next) => {
                     .slice(1)
                 const saveFile = new ReportFileModel({
                     _id: new mongoose.Types.ObjectId(),
-                    fileId: req.files.id,
-                    fileName: req.files.metadata.name,
+                    fileId: req.file.id,
+                    fileName: req.file.metadata.name,
                     fileExtension: filesExtenstions,
-                    fileType: req.files.mimetype,
-                    fileSize: req.files.size,
+                    fileType: req.file.mimetype,
+                    fileSize: req.file.size,
 
                     description: 'Report File',
                 })

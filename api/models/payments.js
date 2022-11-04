@@ -24,12 +24,12 @@ const paymentSchema = mongoose.Schema(
         examiner: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'examiners',
-            required: true,
+           
         },
         opponent: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'opponents',
-            required: true,
+           
         },
         project: {
             type: mongoose.Schema.Types.ObjectId,
@@ -39,12 +39,12 @@ const paymentSchema = mongoose.Schema(
         report: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'examinerReports',
-            required: true,
+           
         },
         opponentReport: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'opponentReports',
-            required: true,
+           
         },
         reciept: {
             type: mongoose.Schema.Types.ObjectId,
