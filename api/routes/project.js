@@ -75,7 +75,7 @@ const store = multer({
 
 const uploadMiddleware = (req, res, next) => {
     const upload = store.array('projectFiles')
-    
+
     upload(req, res, function (err) {
         console.log('we are here')
         if (err instanceof multer.MulterError) {
@@ -102,6 +102,9 @@ router.put('/vl/status/update/:id', projectController.updateProjectStatus)
 router.get('/vl/pprojects', projectController.getPaginatedProjects)
 
 router.get('/v1/projects/:id', projectController.getIndividualProjects)
+
+/** get all projects */
+router.get('/v1/allprojects', projectController.getAllProjects)
 
 /** final submission */
 router.put(

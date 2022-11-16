@@ -528,6 +528,27 @@ exports.getPaginatedProjects = async (req, res, next) => {
     }
 }
 
+/** get all projects */
+exports.getAllProjects = async (req, res, next) => {
+    try {
+        let overall_total = await ProjectModel.find().countDocuments()
+        let getProjects = await ProjectModel.find()
+            .sort({ createdAt: -1 })
+            .populate(
+                'student examiners.examinerId examiners.projectAppointmentLetter examinerReports.reportId files.fileId opponents.opponentId opponentReports.reportId opponents.projectAppointmentLetter FinalSubmissionFiles.fileId supervisor.supervisorId doctoralmembers.doctoralmemberId'
+            )
+        res.status(200).json({
+            items: getProjects,
+            overall_total,
+        })
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500
+        }
+        next(error)
+    }
+}
+
 /** get single projects */
 exports.getIndividualProjects = async (req, res, next) => {
     try {
