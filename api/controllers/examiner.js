@@ -132,9 +132,7 @@ exports.createProjectExaminer = async (req, res, next) => {
                 }
 
                 //thesisfile
-                if (
-                    req.files[iteration].metadata.name === 'projectAppLetter'
-                ) {
+                if (req.files[iteration].metadata.name === 'projectAppLetter') {
                     const filesExtenstions = path
                         .extname(req.files[iteration].originalname)
                         .slice(1)
@@ -335,10 +333,12 @@ exports.assignExaminer = async (req, res, next) => {
 /** get all examiners */
 exports.getAllExaminers = async (req, res, next) => {
     try {
+        let overall_total = await ExaminerModel.find().countDocuments()
         const findExaminers = await ExaminerModel.find()
         console.log(findExaminers, 'finnnnnn')
         res.status(200).json({
             items: findExaminers,
+            overall_total,
         })
     } catch (error) {
         if (!error.statusCode) {

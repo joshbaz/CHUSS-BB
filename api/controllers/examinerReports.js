@@ -137,3 +137,22 @@ exports.getExaminerReport = async (req, res, next) => {
         next(error)
     }
 }
+
+exports.getAllExaminerReports = async (req, res, next) => {
+    try {
+        let overall_total = await ExaminerReportModel.find().countDocuments()
+        const findReports = await ExaminerReportModel.find()
+            .sort({ createdAt: -1 })
+            .populate('examiner reportFiles.files projectId')
+
+        res.status(200).json({
+            items: findReports,
+            overall_total,
+        })
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500
+        }
+        next(error)
+    }
+}

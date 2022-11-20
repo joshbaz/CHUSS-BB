@@ -83,4 +83,6 @@ router.patch(
     examinerReport.updateExaminerReport
 )
 router.get('/v1/getReport/:rid', examinerReport.getExaminerReport)
+/** get all reports */
+router.get('/v1/allexaminerReports', examinerReport.getAllExaminerReports)
 module.exports = router
