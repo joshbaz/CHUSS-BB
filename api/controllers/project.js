@@ -33,12 +33,6 @@ exports.createProject = async (req, res, next) => {
             email,
             phoneNumber,
             alternativeEmail,
-            supervisor1,
-            supervisor2,
-            semesterRegistration,
-            academicYear,
-            scannedForm,
-            thesisfile,
         } = req.body
 
         console.log('all project files', req.files)
@@ -60,8 +54,6 @@ exports.createProject = async (req, res, next) => {
             studentName,
             graduate_program_type: programType,
             degree_program: degreeProgram,
-            semester: semesterRegistration,
-            academicYear,
             schoolName,
             departmentName,
             phoneNumber,
@@ -71,34 +63,19 @@ exports.createProject = async (req, res, next) => {
 
         const savedStudent = await student.save()
 
-        let supervisors = []
-        if (supervisor1 !== undefined && supervisor1 !== '') {
-            supervisors.push({
-                name: supervisor1,
-            })
-        } else {
-        }
-
-        if (supervisor2 !== undefined && supervisor2 !== '') {
-            supervisors.push({
-                name: supervisor2,
-            })
-        } else {
-        }
-
         const project = new ProjectModel({
             _id: mongoose.Types.ObjectId(),
             topic: Topic,
-            supervisors,
+            activeStatus: 'Thesis/dessertation Approval',
             projectStatus: [
                 {
-                    status: 'Create Project',
-                    notes: 'Project creation',
+                    status: 'Admissions',
+                    notes: `New ${programType} student entry`,
                     completed: true,
                 },
                 {
-                    status: 'Looking For Examinar',
-                    notes: 'Searching for examiners',
+                    status: 'Thesis/dessertation Approval',
+                    notes: 'Approval of the thesis/ dessertation',
                     active: true,
                 },
             ],
@@ -106,66 +83,66 @@ exports.createProject = async (req, res, next) => {
             proposedFee: findProposedFee.programFee,
         })
 
-        let savedProject = await project.save()
+        await project.save()
 
-        if (req.files) {
-            for (let iteration = 0; iteration < req.files.length; iteration++) {
-                //scanned Form
-                if (req.files[iteration].metadata.name === 'Intent') {
-                    const filesExtenstions = path
-                        .extname(req.files[iteration].originalname)
-                        .slice(1)
-                    const saveFile = new ProjectFileModel({
-                        _id: mongoose.Types.ObjectId(),
-                        fileId: req.files[iteration].id,
-                        fileName: req.files[iteration].metadata.name,
-                        fileExtension: filesExtenstions,
-                        fileType: req.files[iteration].mimetype,
-                        fileSize: req.files[iteration].size,
-                        description: 'scannedForm',
-                    })
+        // if (req.files) {
+        //     for (let iteration = 0; iteration < req.files.length; iteration++) {
+        //         //scanned Form
+        //         if (req.files[iteration].metadata.name === 'Intent') {
+        //             const filesExtenstions = path
+        //                 .extname(req.files[iteration].originalname)
+        //                 .slice(1)
+        //             const saveFile = new ProjectFileModel({
+        //                 _id: mongoose.Types.ObjectId(),
+        //                 fileId: req.files[iteration].id,
+        //                 fileName: req.files[iteration].metadata.name,
+        //                 fileExtension: filesExtenstions,
+        //                 fileType: req.files[iteration].mimetype,
+        //                 fileSize: req.files[iteration].size,
+        //                 description: 'scannedForm',
+        //             })
 
-                    let savedFiles = await saveFile.save()
+        //             let savedFiles = await saveFile.save()
 
-                    savedProject.files = [
-                        ...savedProject.files,
-                        {
-                            fileId: savedFiles._id,
-                        },
-                    ]
+        //             savedProject.files = [
+        //                 ...savedProject.files,
+        //                 {
+        //                     fileId: savedFiles._id,
+        //                 },
+        //             ]
 
-                    await savedProject.save()
-                }
+        //             await savedProject.save()
+        //         }
 
-                //thesisfile
-                if (req.files[iteration].metadata.name === 'thesis') {
-                    const filesExtenstions = path
-                        .extname(req.files[iteration].originalname)
-                        .slice(1)
-                    const saveFile = new ProjectFileModel({
-                        _id: mongoose.Types.ObjectId(),
-                        fileId: req.files[iteration].id,
-                        fileName: req.files[iteration].metadata.name,
-                        fileExtension: filesExtenstions,
-                        fileType: req.files[iteration].mimetype,
-                        fileSize: req.files[iteration].size,
-                        description: 'thesisfile',
-                    })
+        //         //thesisfile
+        //         if (req.files[iteration].metadata.name === 'thesis') {
+        //             const filesExtenstions = path
+        //                 .extname(req.files[iteration].originalname)
+        //                 .slice(1)
+        //             const saveFile = new ProjectFileModel({
+        //                 _id: mongoose.Types.ObjectId(),
+        //                 fileId: req.files[iteration].id,
+        //                 fileName: req.files[iteration].metadata.name,
+        //                 fileExtension: filesExtenstions,
+        //                 fileType: req.files[iteration].mimetype,
+        //                 fileSize: req.files[iteration].size,
+        //                 description: 'thesisfile',
+        //             })
 
-                    let savedFiles = await saveFile.save()
+        //             let savedFiles = await saveFile.save()
 
-                    savedProject.files = [
-                        ...savedProject.files,
-                        {
-                            fileId: savedFiles._id,
-                        },
-                    ]
+        //             savedProject.files = [
+        //                 ...savedProject.files,
+        //                 {
+        //                     fileId: savedFiles._id,
+        //                 },
+        //             ]
 
-                    await savedProject.save()
-                }
-            }
-        } else {
-        }
+        //             await savedProject.save()
+        //         }
+        //     }
+        // } else {
+        // }
 
         // if (scannedForm !== null) {
         //     const file = new ProjectFileModel({
@@ -210,7 +187,7 @@ exports.createProject = async (req, res, next) => {
         // } else {
         // }
 
-        res.status(201).json('created project successfully')
+        res.status(201).json(`${programType} student created successfully`)
     } catch (error) {
         if (!error.statusCode) {
             error.statusCode = 500
@@ -235,12 +212,9 @@ exports.updateProject = async (req, res, next) => {
             email,
             phoneNumber,
             alternativeEmail,
-            supervisor1,
-            supervisor2,
+
             semesterRegistration,
             academicYear,
-            scannedForm,
-            thesisfile,
         } = req.body
 
         const findProposedFee = await ProgramTypeModel.findOne({
@@ -282,84 +256,69 @@ exports.updateProject = async (req, res, next) => {
 
         await findStudent.save()
 
-        let supervisors = []
-        if (supervisor1 !== undefined && supervisor1 !== '') {
-            supervisors.push({
-                name: supervisor1,
-            })
-        } else {
-        }
-
-        if (supervisor2 !== undefined && supervisor2 !== '') {
-            supervisors.push({
-                name: supervisor2,
-            })
-        } else {
-        }
         //change Project
         findProject.topic = Topic
-        findProject.supervisors = supervisors
 
         await findProject.save()
 
-        if (req.files) {
-            for (let iteration = 0; iteration < req.files.length; iteration++) {
-                //scanned Form
-                if (req.files[iteration].metadata.name === 'Intent') {
-                    const filesExtenstions = path
-                        .extname(req.files[iteration].originalname)
-                        .slice(1)
-                    const saveFile = new ProjectFileModel({
-                        _id: mongoose.Types.ObjectId(),
-                        fileId: req.files[iteration].id,
-                        fileName: req.files[iteration].metadata.name,
-                        fileExtension: filesExtenstions,
-                        fileType: req.files[iteration].mimetype,
-                        fileSize: req.files[iteration].size,
-                        description: 'scannedForm',
-                    })
+        // if (req.files) {
+        //     for (let iteration = 0; iteration < req.files.length; iteration++) {
+        //         //scanned Form
+        //         if (req.files[iteration].metadata.name === 'Intent') {
+        //             const filesExtenstions = path
+        //                 .extname(req.files[iteration].originalname)
+        //                 .slice(1)
+        //             const saveFile = new ProjectFileModel({
+        //                 _id: mongoose.Types.ObjectId(),
+        //                 fileId: req.files[iteration].id,
+        //                 fileName: req.files[iteration].metadata.name,
+        //                 fileExtension: filesExtenstions,
+        //                 fileType: req.files[iteration].mimetype,
+        //                 fileSize: req.files[iteration].size,
+        //                 description: 'scannedForm',
+        //             })
 
-                    let savedFiles = await saveFile.save()
+        //             let savedFiles = await saveFile.save()
 
-                    findProject.files = [
-                        ...findProject.files,
-                        {
-                            fileId: savedFiles._id,
-                        },
-                    ]
+        //             findProject.files = [
+        //                 ...findProject.files,
+        //                 {
+        //                     fileId: savedFiles._id,
+        //                 },
+        //             ]
 
-                    await findProject.save()
-                }
+        //             await findProject.save()
+        //         }
 
-                //thesisfile
-                if (req.files[iteration].metadata.name === 'thesis') {
-                    const filesExtenstions = path
-                        .extname(req.files[iteration].originalname)
-                        .slice(1)
-                    const saveFile = new ProjectFileModel({
-                        _id: mongoose.Types.ObjectId(),
-                        fileId: req.files[iteration].id,
-                        fileName: req.files[iteration].metadata.name,
-                        fileExtension: filesExtenstions,
-                        fileType: req.files[iteration].mimetype,
-                        fileSize: req.files[iteration].size,
-                        description: 'thesisfile',
-                    })
+        //         //thesisfile
+        //         if (req.files[iteration].metadata.name === 'thesis') {
+        //             const filesExtenstions = path
+        //                 .extname(req.files[iteration].originalname)
+        //                 .slice(1)
+        //             const saveFile = new ProjectFileModel({
+        //                 _id: mongoose.Types.ObjectId(),
+        //                 fileId: req.files[iteration].id,
+        //                 fileName: req.files[iteration].metadata.name,
+        //                 fileExtension: filesExtenstions,
+        //                 fileType: req.files[iteration].mimetype,
+        //                 fileSize: req.files[iteration].size,
+        //                 description: 'thesisfile',
+        //             })
 
-                    let savedFiles = await saveFile.save()
+        //             let savedFiles = await saveFile.save()
 
-                    findProject.files = [
-                        ...findProject.files,
-                        {
-                            fileId: savedFiles._id,
-                        },
-                    ]
+        //             findProject.files = [
+        //                 ...findProject.files,
+        //                 {
+        //                     fileId: savedFiles._id,
+        //                 },
+        //             ]
 
-                    await findProject.save()
-                }
-            }
-        } else {
-        }
+        //             await findProject.save()
+        //         }
+        //     }
+        // } else {
+        // }
 
         res.status(201).json('updated project successfully')
     } catch (error) {

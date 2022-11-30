@@ -5,13 +5,15 @@ const projectSchema = mongoose.Schema(
         _id: mongoose.Schema.Types.ObjectId,
         topic: {
             type: String,
-            required: true,
         },
-        supervisors: [
-            {
-                name: String,
-            },
-        ],
+        activeStatus: {
+            type: String,
+        },
+        resubmission: {
+            type: Boolean,
+            default: false,
+        },
+
         projectStatus: [
             {
                 status: String,

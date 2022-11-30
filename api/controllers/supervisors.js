@@ -279,3 +279,54 @@ exports.updateSupervisor = async (req, res, next) => {
         next(error)
     }
 }
+
+/** remove Supervisor From Project */
+exports.removeProjectSupervisor = async (req, res, next) => {
+    try {
+        const projectId = req.params.pid
+        const supervisorId = req.params.sid
+        const findProject = await ProjectModel.findById(projectId)
+
+        if (!findProject) {
+            const error = new Error('Project Not Found')
+            error.statusCode = 404
+            throw error
+        }
+
+        const findSupervisor = await SupervisorModel.findById(supervisorId)
+
+        if (!findSupervisor) {
+            const error = new Error('Supervisor Not Found')
+            error.statusCode = 404
+            throw error
+        }
+
+        let ProjectSupervisors = [...findProject.supervisor]
+
+        let newProjectSupervisors = ProjectSupervisors.filter((data) => {
+            if (
+                findSupervisor._id.toString() !== data.supervisorId.toString()
+            ) {
+                return data
+            } else {
+                console.log('nfound one')
+                return
+            }
+        })
+
+     
+        // console.log(newProjectSupervisors, 'new coll')
+        // console.log(ProjectSupervisors, 'orig coll', findSupervisor._id)
+
+        findProject.supervisor = newProjectSupervisors
+
+        await findProject.save()
+
+        res.status(201).json('Supervisor has been successfully removed')
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500
+        }
+        next(error)
+    }
+}

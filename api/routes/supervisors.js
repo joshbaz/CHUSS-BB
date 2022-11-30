@@ -15,20 +15,19 @@ router.get('/v1/getall', supervisorController.getAllSupervisors)
 /** get individual supervisors */
 router.get('/v1/individual/:id', supervisorController.getIndividualSupervisor)
 
-/** create examiners */
-router.post(
-    '/v1/create',
+/** create supervisors */
+router.post('/v1/create', supervisorController.createSupervisor)
 
-    supervisorController.createSupervisor
-)
-
-/** get paginated examiners */
+/** get paginated supervisors */
 router.get('/v1/psupervisors', supervisorController.getPaginatedSupervisors)
 
-/** update examiners */
+/** update supervisors */
 router.patch('/v1/update/:id', supervisorController.updateSupervisor)
 
-
-
+/** remove supervisors from project */
+router.patch(
+    '/v1/project/remove/:pid/:sid',
+    supervisorController.removeProjectSupervisor
+)
 
 module.exports = router
