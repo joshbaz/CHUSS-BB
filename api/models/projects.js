@@ -52,6 +52,14 @@ const projectSchema = mongoose.Schema(
                 },
             },
         ],
+        registration: [
+            {
+                registrationId: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: 'registrations',
+                },
+            },
+        ],
         doctoralmembers: [
             {
                 doctoralmemberId: {

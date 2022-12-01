@@ -22,6 +22,7 @@ const supervisorRoutes = require('./api/routes/supervisors')
 const doctoralMemberRoutes = require('./api/routes/doctoralmembers')
 const schoolRoutes = require('./api/routes/schools');
 const departmentRoutes = require('./api/routes/schoolDepartments')
+const registrationRoutes = require('./api/routes/registration');
 //apply middleware
 app.use(cors())
 app.use(bodyparser.json())
@@ -68,6 +69,7 @@ app.use('/supervisor', supervisorRoutes)
 app.use('/doctoralmember', doctoralMemberRoutes)
 app.use('/school', schoolRoutes)
 app.use('/department', departmentRoutes)
+app.use('/registration', registrationRoutes)
 /** global error handling */
 app.use((error, req, res, next) => {
     const status = error.statusCode || 500
