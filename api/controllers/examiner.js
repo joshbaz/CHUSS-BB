@@ -4,7 +4,32 @@ const ProjectModel = require('../models/projects')
 const ProjectFileModel = require('../models/projectFiles')
 const ExaminerModel = require('../models/examiners')
 const ExaminerReportModel = require('../models/examinerReports')
+
+const multer = require('multer')
+let mongo = require('mongodb')
+const { GridFsStorage } = require('multer-gridfs-storage')
+var Grid = require('gridfs-stream')
+require('dotenv').config()
+const mongoUri = process.env.MONGO_R_URL
 const path = require('path')
+const conn = mongoose.createConnection(mongoUri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+})
+
+let gfs
+let gridfsBucket
+conn.once('open', () => {
+    gridfsBucket = new mongoose.mongo.GridFSBucket(conn.db, {
+        bucketName: 'chussfiles',
+    })
+
+    gfs = Grid(conn.db, mongo)
+    gfs.collection('chussfiles')
+    // gfs = Grid(conn.db)
+    // gfs.collection('reportFiless')
+})
+
 /** create Examiner From Project */
 exports.createProjectExaminer = async (req, res, next) => {
     try {
@@ -94,6 +119,10 @@ exports.createProjectExaminer = async (req, res, next) => {
         /** initialize examiner to save in project Model */
         let examinerToSave = {
             examinerId: savedExaminer._id,
+            submissionType:
+                findProject.submissionStatus === 'resubmission'
+                    ? 'resubmission'
+                    : 'normal',
             preferredPayment:
                 typeOfExaminer === 'External' ? preferredPayment : '',
         }
@@ -179,6 +208,10 @@ exports.createProjectExaminer = async (req, res, next) => {
             ...findProject.examinerReports,
             {
                 reportId: savedReport._id,
+                submissionType:
+                    findProject.submissionStatus === 'resubmission'
+                        ? 'resubmission'
+                        : 'normal',
             },
         ]
 
@@ -277,6 +310,9 @@ exports.assignExaminer = async (req, res, next) => {
 
             let examinerToSave = {
                 examinerId: findExaminer._id,
+                submissionType: findProject.submissionStatus === 'resubmission'
+                    ? 'resubmission'
+                    : 'normal',
             }
 
             if (findExaminer.typeOfExaminer === 'External') {
@@ -310,6 +346,10 @@ exports.assignExaminer = async (req, res, next) => {
                 ...findProject.examinerReports,
                 {
                     reportId: savedReport._id,
+                    submissionType:
+                        findProject.submissionStatus === 'resubmission'
+                            ? 'resubmission'
+                            : 'normal',
                 },
             ]
 
@@ -334,7 +374,9 @@ exports.assignExaminer = async (req, res, next) => {
 exports.getAllExaminers = async (req, res, next) => {
     try {
         let overall_total = await ExaminerModel.find().countDocuments()
-        const findExaminers = await ExaminerModel.find()
+        const findExaminers = await ExaminerModel.find().populate(
+            'generalAppointmentLetters.fileId'
+        )
         console.log(findExaminers, 'finnnnnn')
         res.status(200).json({
             items: findExaminers,
@@ -500,6 +542,358 @@ exports.getStudentsByExaminer = async (req, res, next) => {
             perPage: perPages,
             current_total,
         })
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500
+        }
+        next(error)
+    }
+}
+
+/** Delete the project Appointment Letter */
+exports.deleteProjectAppLetter = async (req, res, next) => {
+    try {
+        const projectId = req.params.pid
+        const projectAppLId = req.params.fid
+
+        const findProject = await ProjectModel.findById(projectId)
+        if (!findProject) {
+            const error = new Error('Project not found!')
+            error.statusCode = 404
+            throw error
+        }
+
+        const findFileDetail = await ProjectFileModel.findById(projectAppLId)
+        if (!findFileDetail) {
+            const error = new Error('File not found!')
+            error.statusCode = 404
+            throw error
+        }
+
+        let ProjectExaminers = [...findProject.examiners]
+
+        let newProjectExaminers = ProjectExaminers.map((data) => {
+            if (
+                !data.projectAppointmentLetter ||
+                findFileDetail._id.toString() !==
+                    data.projectAppointmentLetter.toString()
+            ) {
+                return data
+            } else {
+                return {
+                    examinerId: data.examinerId,
+                    preferredPayment: data.preferredPayment,
+                }
+            }
+        })
+
+        findProject.examiners = newProjectExaminers
+        await findProject.save()
+
+        if (findFileDetail.fileId) {
+            const initFileId = findFileDetail.fileId
+            console.log('initFileId', initFileId)
+            if (!initFileId || initFileId === 'undefined') {
+                return res.status(400).send('no document found')
+            } else {
+                const newFileId = new mongoose.Types.ObjectId(initFileId)
+                console.log('newFileId', newFileId)
+
+                const file = await gfs.files.findOne({ _id: newFileId })
+                const gsfb = new mongoose.mongo.GridFSBucket(conn.db, {
+                    bucketName: 'chussfiles',
+                })
+
+                gsfb.delete(file._id, async (err, gridStore) => {
+                    if (err) {
+                        return next(err)
+                    }
+
+                    console.log('file chunks deletion registration')
+
+                    await ProjectFileModel.findByIdAndDelete(projectAppLId)
+                    console.log('registration finally deleted registration')
+                    res.status(200).json(`Project App Letter has been deleted`)
+                    //res.status(200).end()
+                    return
+                })
+            }
+        } else {
+            await ProjectFileModel.findByIdAndDelete(projectAppLId)
+            console.log('not allowed file finally deleted registration')
+            res.status(200).json(`File has been deleted`)
+        }
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500
+        }
+        next(error)
+    }
+}
+
+/** add project file Letter */
+exports.createProjectAppExaminerFile = async (req, res, next) => {
+    try {
+        const projectId = req.params.pid
+        const projectExaminer = req.params.eid
+
+        const findProject = await ProjectModel.findById(projectId)
+        if (!findProject) {
+            const error = new Error('Project not found!')
+            error.statusCode = 404
+            throw error
+        }
+
+        const findExaminer = await ExaminerModel.findById(projectExaminer)
+        if (!findExaminer) {
+            const error = new Error('Examiner not found!')
+            error.statusCode = 404
+            throw error
+        }
+
+        if (req.files) {
+            for (let iteration = 0; iteration < req.files.length; iteration++) {
+                if (req.files[iteration].metadata.name === 'projectAppLetter') {
+                    const filesExtenstions = path
+                        .extname(req.files[iteration].originalname)
+                        .slice(1)
+                    const saveFile = new ProjectFileModel({
+                        _id: mongoose.Types.ObjectId(),
+                        fileId: req.files[iteration].id,
+                        fileName: req.files[iteration].metadata.name,
+                        fileExtension: filesExtenstions,
+                        fileType: req.files[iteration].mimetype,
+                        fileSize: req.files[iteration].size,
+                        description: 'projectAppLetter',
+                    })
+
+                    let savedFiles = await saveFile.save()
+
+                    //examinerToSave.projectAppointmentLetter = savedFiles._id
+                    //transfer details of savedFile
+                    let ProjectExaminers = [...findProject.examiners]
+
+                    let newProjectExaminers = ProjectExaminers.map((data) => {
+                        if (
+                            findExaminer._id.toString() !==
+                            data.examinerId.toString()
+                        ) {
+                            return data
+                        } else {
+                            return {
+                                examinerId: data.examinerId,
+                                projectAppointmentLetter: savedFiles._id,
+                                preferredPayment: data.preferredPayment,
+                            }
+                        }
+                    })
+
+                    /** save the project */
+                    findProject.examiners = newProjectExaminers
+                    await findProject.save()
+                    res.status(201).json('Project Appointment Letter Added ')
+                    return
+                }
+            }
+        } else {
+            res.status(404).json('no file to upload')
+        }
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500
+        }
+        next(error)
+    }
+}
+
+/** remove project examiner */
+exports.removeProjectExaminersR = async (req, res, next) => {
+    try {
+        const sectionId = req.params.secid
+        const examinerId = req.params.eid
+        const projectId = req.params.pid
+
+        const findProject = await ProjectModel.findById(projectId).populate(
+            'examinerReports.reportId'
+        )
+        if (!findProject) {
+            const error = new Error('Project not found!')
+            error.statusCode = 404
+            throw error
+        }
+
+        const findExaminer = await ExaminerModel.findById(examinerId)
+        if (!findExaminer) {
+            const error = new Error('Examiner not found!')
+            error.statusCode = 404
+            throw error
+        }
+
+        const findReports = await ExaminerReportModel.find({
+            examiner: examinerId,
+            projectId: projectId,
+            marked: false,
+        })
+        if (!findReports) {
+            const error = new Error('No Reports not found!')
+            error.statusCode = 404
+            throw error
+        }
+
+        if (findReports.length < 1) {
+            res.status(200).json('You cannot delete a Marked Report!')
+        } else {
+            console.log('trying to get how many returned', findReports)
+
+            /** query whether the secid type is resubmission /normal */
+            let allProjectExaminers = [...findProject.examiners]
+
+            /** get the secId & type */
+            let secDetails = allProjectExaminers.find(
+                (element) => element._id.toString() === sectionId.toString()
+            )
+
+            if (secDetails) {
+                /** query out reports */
+                let allProjectExamReports = [...findProject.examinerReports]
+                console.log('allProjectExamReports', allProjectExamReports)
+                let foundReports = allProjectExamReports.find(
+                    (element) =>
+                        element.submissionType === secDetails.submissionType &&
+                        element.reportId.examiner.toString() ===
+                            secDetails.examinerId.toString() &&
+                        element.reportId.marked === false
+                )
+
+                if (foundReports) {
+                    /** remove the report from project */
+                    console.log('saved new ', foundReports)
+                    let newAllReports = allProjectExamReports.filter((data) => {
+                        if (
+                            foundReports._id.toString() !== data._id.toString()
+                        ) {
+                            return data
+                        } else {
+                            return
+                        }
+                    })
+
+                    findProject.examinerReports = newAllReports
+                    await findProject.save()
+                    console.log('saved new ')
+                    /** Delete the report from reports */
+                    await ExaminerReportModel.findByIdAndDelete(
+                        foundReports.reportId._id
+                    )
+                    /** remove project appointment if any and examiner from project */
+                    if (secDetails.projectAppointmentLetter) {
+                        const findFileDetail = await ProjectFileModel.findById(
+                            secDetails.projectAppointmentLetter
+                        )
+                        if (!findFileDetail) {
+                            const error = new Error('File not found!')
+                            error.statusCode = 404
+                            throw error
+                        }
+
+                        let newAllExaminers = allProjectExaminers.filter(
+                            (data) => {
+                                if (
+                                    secDetails._id.toString() !==
+                                    data._id.toString()
+                                ) {
+                                    return data
+                                }
+                            }
+                        )
+
+                        findProject.examiners = newAllExaminers
+                        await findProject.save()
+                        /** delete the project file found */
+                        if (findFileDetail.fileId) {
+                            const initFileId = findFileDetail.fileId
+                            console.log('initFileId', initFileId)
+                            if (!initFileId || initFileId === 'undefined') {
+                                return res.status(400).send('no document found')
+                            } else {
+                                const newFileId = new mongoose.Types.ObjectId(
+                                    initFileId
+                                )
+                                console.log('newFileId', newFileId)
+
+                                const file = await gfs.files.findOne({
+                                    _id: newFileId,
+                                })
+                                const gsfb = new mongoose.mongo.GridFSBucket(
+                                    conn.db,
+                                    {
+                                        bucketName: 'chussfiles',
+                                    }
+                                )
+
+                                gsfb.delete(
+                                    file._id,
+                                    async (err, gridStore) => {
+                                        if (err) {
+                                            return next(err)
+                                        }
+
+                                        console.log(
+                                            'file chunks deletion registration'
+                                        )
+
+                                        await ProjectFileModel.findByIdAndDelete(
+                                            findFileDetail._id
+                                        )
+                                        console.log(
+                                            'registration finally deleted registration'
+                                        )
+                                        res.status(200).json(
+                                            `examiner removed from project`
+                                        )
+                                        //res.status(200).end()
+                                        return
+                                    }
+                                )
+                            }
+                        } else {
+                            await ProjectFileModel.findByIdAndDelete(
+                                findFileDetail._id
+                            )
+                            console.log(
+                                'not allowed file finally deleted registration'
+                            )
+                            res.status(200).json(
+                                `examiner removed from project`
+                            )
+                        }
+                    } else {
+                        let newAllExaminers = allProjectExaminers.filter(
+                            (data) => {
+                                if (
+                                    secDetails._id.toString() !==
+                                    data._id.toString()
+                                ) {
+                                    return data
+                                }
+                            }
+                        )
+
+                        findProject.examiners = newAllExaminers
+                        await findProject.save()
+                        res.status(200).json('examiner removed from project')
+                    }
+                    /** Done */
+                } else {
+                    res.status(200).json('Examiner cannot be removed')
+                }
+            } else {
+                res.status(200).json('Examiner cannot be removed')
+            }
+            /** get returned values */
+
+            // res.status(200).json('returned values')
+        }
     } catch (error) {
         if (!error.statusCode) {
             error.statusCode = 500

@@ -200,21 +200,43 @@ exports.removeRegistration = async (req, res, next) => {
             } else {
                 const newFileId = new mongoose.Types.ObjectId(initFileId)
                 console.log('newFileId', newFileId)
-                await gfs.files.deleteOne(
-                    { _id: newFileId },
-                    (err, results) => {
-                        if (err) {
-                            console.log('error file registration')
-                            return res.status(400).json('failed to delete file')
-                        }
-                        console.log('file deletion registration', results)
-                        return
-                    }
-                )
 
-                await RegistrationModel.findByIdAndDelete(registrationId)
-                console.log('registration finally deleted registration')
-                res.status(200).json(`Registration has been deleted`)
+                const file = await gfs.files.findOne({ _id: newFileId })
+                const gsfb = new mongoose.mongo.GridFSBucket(conn.db, {
+                    bucketName: 'chussfiles',
+                })
+
+                gsfb.delete(file._id, async (err, gridStore) => {
+                    if (err) {
+                        return next(err)
+                    }
+
+                    console.log('file chunks deletion registration')
+
+                    await RegistrationModel.findByIdAndDelete(registrationId)
+                    console.log('registration finally deleted registration')
+                    res.status(200).json(`Registration has been deleted`)
+                    //res.status(200).end()
+                    return
+                })
+
+                //    let checkData = await gfs.files
+                //        .find({ _id: newFileId })
+                //        .toArray((err, files) => {
+                //            console.log('files', files)
+                //        })
+
+                // await gfs.files.deleteOne(
+                //     { _id: newFileId },
+                //     (err, results) => {
+                //         if (err) {
+                //             console.log('error file registration')
+                //             return res.status(400).json('failed to delete file')
+                //         }
+                //         console.log('file deletion registration', results)
+                //         return
+                //     }
+                // )
             }
         } else {
             await RegistrationModel.findByIdAndDelete(registrationId)

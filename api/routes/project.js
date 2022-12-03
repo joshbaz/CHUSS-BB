@@ -142,6 +142,9 @@ router.put(
     projectController.updateDateOfGraduation
 )
 
+/** date of final submission */
+router.patch('/v1/resubmission/update/:id', projectController.updateResubmission)
+
 //DeleteFiles
 const deleteFile = (id) => {
     if (!id || id === 'undefined') return res.status(400).send('no file found')

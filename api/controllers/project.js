@@ -66,7 +66,7 @@ exports.createProject = async (req, res, next) => {
         const project = new ProjectModel({
             _id: mongoose.Types.ObjectId(),
             topic: Topic,
-            activeStatus: 'Thesis/dessertation Approval',
+            activeStatus: 'Thesis / dessertation Approval',
             projectStatus: [
                 {
                     status: 'Admissions',
@@ -74,9 +74,39 @@ exports.createProject = async (req, res, next) => {
                     completed: true,
                 },
                 {
-                    status: 'Thesis/dessertation Approval',
+                    status: 'Thesis / dessertation Approval',
                     notes: 'Approval of the thesis/ dessertation',
                     active: true,
+                },
+                {
+                    status: 'Looking For Examinar',
+                    notes: '',
+                    completed: false,
+                },
+                {
+                    status: 'Marking in Progress',
+                    notes: '',
+                    completed: false,
+                },
+                {
+                    status: 'Waiting For Viva Approval',
+                    notes: '',
+                    completed: false,
+                },
+                {
+                    status: 'Waiting For Viva Minutes',
+                    notes: '',
+                    completed: false,
+                },
+                {
+                    status: 'Final Submission',
+                    notes: '',
+                    completed: false,
+                },
+                {
+                    status: 'Graduated',
+                    notes: '',
+                    completed: false,
                 },
             ],
             student: savedStudent._id,
@@ -374,7 +404,7 @@ exports.updateProjectStatus = async (req, res, next) => {
                     // return res.status(200).json('status 3 updated')
                 } else {
                     newDataArray[iteration].notes = notes
-
+                    findProject.activeStatus = status
                     findProject.projectStatus = [...newDataArray]
                     await findProject.save()
                     return res.status(200).json('status 2 updated')
@@ -387,7 +417,7 @@ exports.updateProjectStatus = async (req, res, next) => {
             ) {
                 newDataArray[iteration].active = true
                 newDataArray[iteration].completed = false
-
+                findProject.activeStatus = status
                 let removedArray = newDataArray.splice(iteration + 1)
                 if (removedArray.length > 0) {
                     let filteredArray = removedArray.filter((data) => {
@@ -424,8 +454,9 @@ exports.updateProjectStatus = async (req, res, next) => {
                         active: true,
                     },
                 ]
-
+                findProject.activeStatus = status
                 await findProject.save()
+
                 res.status(200).json('status 1 updated')
             }
         }
@@ -755,6 +786,122 @@ exports.updateDateOfGraduation = async (req, res, next) => {
         await findProject.save()
 
         res.status(201).json('updated graduation Date')
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500
+        }
+        next(error)
+    }
+}
+
+/** update resubmission */
+exports.updateResubmission = async (req, res, next) => {
+    try {
+        const projectId = req.params.id
+        const { submissionStatus } = req.body
+        const status =
+            submissionStatus === 'resubmission' ? 'Looking For Examinar' : ''
+        const notes = 'resubmission'
+        const findProject = await ProjectModel.findById(projectId)
+        if (!findProject) {
+            const error = new Error('No project found')
+            error.statusCode = 404
+            throw error
+        }
+
+        findProject.submissionStatus = submissionStatus
+        await findProject.save()
+
+        if (submissionStatus === 'resubmission') {
+            let newDataArray = [...findProject.projectStatus]
+            findProject.activeStatus = status
+
+            for (
+                let iteration = 0;
+                iteration < newDataArray.length;
+                iteration++
+            ) {
+                let alliteration = iteration + 1
+
+                if (newDataArray[iteration].active === true) {
+                    if (
+                        newDataArray[iteration].status.toLowerCase() !==
+                        status.toLowerCase()
+                    ) {
+                        newDataArray[iteration].active = false
+                        newDataArray[iteration].completed = true
+
+                        // findProject.projectStatus = [
+                        //     ...newDataArray,
+                        //     {
+                        //         status: status,
+                        //         notes: notes,
+                        //         active: true,
+                        //     },
+                        // ]
+
+                        // await findProject.save()
+                        // return res.status(200).json('status 3 updated')
+                    } else {
+                        newDataArray[iteration].notes = notes
+
+                        findProject.projectStatus = [...newDataArray]
+                        await findProject.save()
+                        return res.status(201).json('submission status changed')
+                    }
+                }
+
+                if (
+                    newDataArray[iteration].status.toLowerCase() ===
+                    status.toLowerCase()
+                ) {
+                    newDataArray[iteration].active = true
+                    newDataArray[iteration].completed = false
+
+                    let removedArray = newDataArray.splice(iteration + 1)
+                    if (removedArray.length > 0) {
+                        let filteredArray = removedArray.filter((data) => {
+                            data.completed = false
+                            data.active = false
+                            return data
+                        })
+
+                        findProject.projectStatus = [
+                            ...newDataArray,
+                            ...filteredArray,
+                        ]
+                        await findProject.save()
+                        return res.status(201).json('submission status changed')
+                    } else {
+                        findProject.projectStatus = [...newDataArray]
+                        await findProject.save()
+                        return
+                    }
+                }
+
+                if (
+                    alliteration === newDataArray.length &&
+                    newDataArray[iteration].status.toLowerCase() !==
+                        status.toLowerCase()
+                ) {
+                    findProject.projectStatus = [
+                        ...newDataArray,
+                        {
+                            status: status,
+                            notes: notes,
+                            active: true,
+                        },
+                    ]
+
+                    await findProject.save()
+                   res.status(201).json('submission status changed')
+                    return
+                }
+            }
+            //res.status(201).json('submission status changed')
+        } else {
+            res.status(201).json('submission status changed')
+        }
     } catch (error) {
         if (!error.statusCode) {
             error.statusCode = 500

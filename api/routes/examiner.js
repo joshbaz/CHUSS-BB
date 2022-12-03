@@ -118,6 +118,23 @@ router.get('/v1/students/:e_id', examinerController.getStudentsByExaminer)
 /** update examiners */
 router.patch('/v1/update/:id', examinerController.updateExaminer)
 
+/** delete project App letter */
+router.patch(
+    '/v1/letter/projectexaminer/delete/:pid/:fid',
+    examinerController.deleteProjectAppLetter
+)
+
+router.patch(
+    '/v1/letter/projectexaminer/add/:pid/:eid',
+    uploadMiddleware,
+    examinerController.createProjectAppExaminerFile
+)
+
+router.patch(
+    '/v1/projectexaminers/remove/:pid/:eid/:secid',
+    examinerController.removeProjectExaminersR
+)
+
 // router.post('/v1/trial', upload.single('myfiles'), (req, res) => {
 //     res.json({ file: req.file, text: req.body.type })
 // })

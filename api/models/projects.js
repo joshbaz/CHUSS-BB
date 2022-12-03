@@ -9,9 +9,9 @@ const projectSchema = mongoose.Schema(
         activeStatus: {
             type: String,
         },
-        resubmission: {
-            type: Boolean,
-            default: false,
+        submissionStatus: {
+            type: String,
+            default: 'normal',
         },
 
         projectStatus: [
@@ -71,6 +71,10 @@ const projectSchema = mongoose.Schema(
 
         examiners: [
             {
+                submissionType: {
+                    type: String,
+                    default: 'normal',
+                },
                 examinerId: {
                     type: mongoose.Schema.Types.ObjectId,
                     ref: 'examiners',
@@ -85,6 +89,10 @@ const projectSchema = mongoose.Schema(
 
         examinerReports: [
             {
+                submissionType: {
+                    type: String,
+                    default: 'normal',
+                },
                 reportId: {
                     type: mongoose.Schema.Types.ObjectId,
                     ref: 'examinerReports',
