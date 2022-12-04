@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const RegistrationModel = require('../models/registration')
 const ProjectModel = require('../models/projects')
 const multer = require('multer')
+const io = require('../../socket')
 let mongo = require('mongodb')
 const { GridFsStorage } = require('multer-gridfs-storage')
 var Grid = require('gridfs-stream')
@@ -115,6 +116,10 @@ exports.addRegistration = async (req, res, next) => {
                 ]
                 await findProject.save()
             }
+            io.getIO().emit('updatestudent', {
+                actions: 'update-student',
+                data: findProject._id.toString(),
+            })
 
             res.status(200).json('registration created successfully')
         } else {
@@ -128,6 +133,10 @@ exports.addRegistration = async (req, res, next) => {
             ]
 
             await findProject.save()
+            io.getIO().emit('updatestudent', {
+                actions: 'update-student',
+                data: findProject._id.toString(),
+            })
 
             res.status(200).json('registration created successfully')
         }
@@ -215,6 +224,10 @@ exports.removeRegistration = async (req, res, next) => {
 
                     await RegistrationModel.findByIdAndDelete(registrationId)
                     console.log('registration finally deleted registration')
+                    io.getIO().emit('updatestudent', {
+                        actions: 'update-student',
+                        data: findProject._id.toString(),
+                    })
                     res.status(200).json(`Registration has been deleted`)
                     //res.status(200).end()
                     return
@@ -241,6 +254,10 @@ exports.removeRegistration = async (req, res, next) => {
         } else {
             await RegistrationModel.findByIdAndDelete(registrationId)
             console.log('not allowed registration finally deleted registration')
+            io.getIO().emit('updatestudent', {
+                actions: 'update-student',
+                data: findProject._id.toString(),
+            })
             res.status(200).json(`Registration has been deleted`)
         }
     } catch (error) {

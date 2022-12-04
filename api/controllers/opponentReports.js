@@ -3,9 +3,9 @@ const OpponentReportModel = require('../models/opponentReports')
 const ReportFileModel = require('../models/reportFiles')
 const PaymentModel = require('../models/payments')
 const path = require('path')
-const multer = require('multer')
-const { GridFsStorage } = require('multer-gridfs-storage')
-const crypto = require('crypto')
+let mongo = require('mongodb')
+var Grid = require('gridfs-stream')
+const Moments = require('moment-timezone')
 
 require('dotenv').config()
 const mongoUri = process.env.MONGO_R_URL
@@ -16,24 +16,18 @@ const conn = mongoose.createConnection(mongoUri, {
 })
 
 let gfs
-
+let gridfsBucket
 conn.once('open', () => {
-    gfs = new mongoose.mongo.GridFSBucket(conn.db, {
+    gridfsBucket = new mongoose.mongo.GridFSBucket(conn.db, {
         bucketName: 'chussfiles',
     })
+
+    gfs = Grid(conn.db, mongo)
+    gfs.collection('chussfiles')
+    // gfs = Grid(conn.db)
+    // gfs.collection('reportFiless')
 })
 
-const deleteFile = async (id) => {
-    if (!id || id === 'undefined') return res.status(400).send('no file found')
-    const _id = new mongoose.Types.ObjectId(id)
-    await gfs.delete(_id, (err) => {
-        if (err) {
-            return 'error'
-        } else {
-            return 'success'
-        }
-    })
-}
 /** update ExaminerReport */
 exports.updateOpponentReport = async (req, res, next) => {
     try {
@@ -52,9 +46,10 @@ exports.updateOpponentReport = async (req, res, next) => {
             throw error
         }
 
-       
-        findReport.marked =  true 
+        const submissionDate = Moments().tz('Africa/Kampala').format()
+        findReport.marked = true
         findReport.reportStatus = 'Passed'
+        findReport.submissionDate = submissionDate
         await findReport.save()
 
         const payment = new PaymentModel({
@@ -77,58 +72,34 @@ exports.updateOpponentReport = async (req, res, next) => {
         await findReport.save()
 
         if (req.file) {
-            if (findReport.reportFiles.length > 0) {
-                const performDeleteFile = deleteFile(
-                    findReport.reportFiles[0].files.fileId
-                )
+            const filesExtenstions = path
+                .extname(req.file.originalname)
+                .slice(1)
+            const saveFile = new ReportFileModel({
+                _id: new mongoose.Types.ObjectId(),
+                fileId: req.file.id,
+                fileName: req.file.metadata.name,
+                fileExtension: filesExtenstions,
+                fileType: req.file.mimetype,
+                fileSize: req.file.size,
 
-                if (performDeleteFile === 'success') {
-                    await ReportFileModel.deleteOne({
-                        _id: findReport.reportFiles[0].files._id,
-                    })
-                    const filesExtenstions = path
-                        .extname(req.file.originalname)
-                        .slice(1)
-                    const saveFile = new ReportFileModel({
-                        _id: new mongoose.Types.ObjectId(),
-                        fileId: req.file.id,
-                        fileName: req.file.metadata.name,
-                        fileExtension: filesExtenstions,
-                        fileType: req.file.mimetype,
-                        fileSize: req.file.size,
+                description: 'Report File',
+            })
 
-                        description: 'Report File',
-                    })
-
-                    let savedFiles = await saveFile.save()
-                    findReport.reportFiles = [{ files: savedFiles._id }]
-                    await findReport.save()
-                } else {
-                }
-            } else {
-                const filesExtenstions = path
-                    .extname(req.file.originalname)
-                    .slice(1)
-                const saveFile = new ReportFileModel({
-                    _id: new mongoose.Types.ObjectId(),
-                    fileId: req.file.id,
-                    fileName: req.file.metadata.name,
-                    fileExtension: filesExtenstions,
-                    fileType: req.file.mimetype,
-                    fileSize: req.file.size,
-
-                    description: 'Report File',
-                })
-
-                let savedFiles = await saveFile.save()
-                findReport.reportFiles = [{ files: savedFiles._id }]
-                await findReport.save()
-            }
-
-            
+            let savedFiles = await saveFile.save()
+            findReport.reportFiles = [{ files: savedFiles._id }]
+            await findReport.save()
         } else {
         }
+        io.getIO().emit('updatestudent', {
+            actions: 'update-student',
+            data: findReport.projectId._id.toString(),
+        })
 
+        io.getIO().emit('updatereport', {
+            actions: 'update-report',
+            data: findReport._id.toString(),
+        })
         res.status(200).json('updated opponent report')
     } catch (error) {
         if (!error.statusCode) {
@@ -154,6 +125,122 @@ exports.getOpponentReport = async (req, res, next) => {
         }
 
         res.status(200).json(findReport)
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500
+        }
+        next(error)
+    }
+}
+
+/** all opponent files */
+exports.getAllOpponentReports = async (req, res, next) => {
+    try {
+        let overall_total = await OpponentReportModel.find().countDocuments()
+        const findReports = await OpponentReportModel.find()
+            .sort({ createdAt: -1 })
+            .populate('examiner reportFiles.files projectId')
+
+        res.status(200).json({
+            items: findReports,
+            overall_total,
+        })
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500
+        }
+        next(error)
+    }
+}
+
+/** remove the examiner report file */
+exports.removeOpponentReportFile = async (req, res, next) => {
+    try {
+        const reportId = req.params.rpid
+        const fileId = req.params.fid
+        const secId = req.params.secId
+
+        const findReports = await OpponentReportModel.findById(reportId)
+        if (!findReports) {
+            const error = new Error('Report not found!')
+            error.statusCode = 404
+            throw error
+        }
+
+        const findMainFile = await ReportFileModel.findOne({
+            fileId: fileId,
+        })
+        if (!findMainFile) {
+            const error = new Error('No File  found!')
+            error.statusCode = 404
+            throw error
+        }
+
+        let allFiles = [...findReports.reportFiles]
+        /** remove the file from report files */
+        let newFiles = allFiles.filter((data) => {
+            if (data._id.toString() === secId.toString()) {
+                return
+            } else {
+                return data
+            }
+        })
+
+        /** save the file */
+        findReports.reportFiles = newFiles
+        await findReports.save()
+
+        const initFileId = findMainFile.fileId
+
+        if (initFileId) {
+            if (!initFileId || initFileId === 'undefined') {
+                return res.status(400).send('no document found')
+            } else {
+                const newFileId = new mongoose.Types.ObjectId(initFileId)
+                const file = await gfs.files.findOne({ _id: newFileId })
+                const gsfb = new mongoose.mongo.GridFSBucket(conn.db, {
+                    bucketName: 'chussfiles',
+                })
+
+                gsfb.delete(file._id, async (err, gridStore) => {
+                    if (err) {
+                        return next(err)
+                    }
+
+                    console.log('file chunks deletion registration')
+
+                    await ReportFileModel.findByIdAndDelete(findMainFile._id)
+                    console.log('registration finally deleted registration')
+
+                    io.getIO().emit('updatestudent', {
+                        actions: 'update-student',
+                        data: findReports.projectId.toString(),
+                    })
+
+                    io.getIO().emit('updatereport', {
+                        actions: 'update-report',
+                        data: findReports._id.toString(),
+                    })
+                    res.status(200).json(`File has been deleted`)
+                    //res.status(200).end()
+                    return
+                })
+            }
+        } else {
+            await ReportFileModel.findByIdAndDelete(findMainFile._id)
+            console.log('not allowed registration finally deleted registration')
+
+            io.getIO().emit('updatestudent', {
+                actions: 'update-student',
+                data: findReports.projectId.toString(),
+            })
+
+            io.getIO().emit('updatereport', {
+                actions: 'update-report',
+                data: findReports._id.toString(),
+            })
+            res.status(200).json(`File has been deleted`)
+        }
     } catch (error) {
         if (!error.statusCode) {
             error.statusCode = 500

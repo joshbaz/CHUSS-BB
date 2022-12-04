@@ -16,10 +16,19 @@ const examinerReportSchema = mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: 'payments',
         },
-        remarks: String,
-        ungraded: { type: Boolean },
+        remarks: {
+            type: String,
+            default: '',
+        },
+        ungraded: { type: String, default: 'false' },
         reportStatus: String,
         marked: { type: Boolean, default: false },
+        creationDate: {
+            type: String,
+        },
+        submissionDate: {
+            type: String,
+        },
         reportFiles: [
             {
                 files: {

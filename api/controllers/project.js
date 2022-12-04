@@ -5,8 +5,34 @@ const ProjectFileModel = require('../models/projectFiles')
 const ProgramTypeModel = require('../models/programType')
 require('../models/examiners')
 require('../models/examinerReports')
-const path = require('path')
 
+const io = require('../../socket')
+
+const path = require('path')
+const multer = require('multer')
+let mongo = require('mongodb')
+const { GridFsStorage } = require('multer-gridfs-storage')
+var Grid = require('gridfs-stream')
+require('dotenv').config()
+const mongoUri = process.env.MONGO_R_URL
+const conn = mongoose.createConnection(mongoUri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+})
+
+let gfs
+let gridfsBucket
+
+conn.once('open', () => {
+    gridfsBucket = new mongoose.mongo.GridFSBucket(conn.db, {
+        bucketName: 'chussfiles',
+    })
+
+    gfs = Grid(conn.db, mongo)
+    gfs.collection('chussfiles')
+    // gfs = Grid(conn.db)
+    // gfs.collection('reportFiless')
+})
 /**
  *
  * try {
@@ -216,7 +242,9 @@ exports.createProject = async (req, res, next) => {
         //     await savedProject.save()
         // } else {
         // }
-
+        io.getIO().emit('new-student', {
+            actions: 'new-student',
+        })
         res.status(201).json(`${programType} student created successfully`)
     } catch (error) {
         if (!error.statusCode) {
@@ -349,7 +377,10 @@ exports.updateProject = async (req, res, next) => {
         //     }
         // } else {
         // }
-
+        io.getIO().emit('updatestudent', {
+            actions: 'update-student',
+            data: findProject._id.toString(),
+        })
         res.status(201).json('updated project successfully')
     } catch (error) {
         if (!error.statusCode) {
@@ -407,6 +438,10 @@ exports.updateProjectStatus = async (req, res, next) => {
                     findProject.activeStatus = status
                     findProject.projectStatus = [...newDataArray]
                     await findProject.save()
+                    io.getIO().emit('updatestudent', {
+                        actions: 'update-student',
+                        data: findProject._id.toString(),
+                    })
                     return res.status(200).json('status 2 updated')
                 }
             }
@@ -433,10 +468,18 @@ exports.updateProjectStatus = async (req, res, next) => {
                         ...filteredArray,
                     ]
                     await findProject.save()
+                    io.getIO().emit('updatestudent', {
+                        actions: 'update-student',
+                        data: findProject._id.toString(),
+                    })
                     return res.status(200).json('status 4 updated')
                 } else {
                     findProject.projectStatus = [...newDataArray]
                     await findProject.save()
+                    io.getIO().emit('updatestudent', {
+                        actions: 'update-student',
+                        data: findProject._id.toString(),
+                    })
                     return res.status(200).json('status 3 updated')
                 }
             }
@@ -456,7 +499,10 @@ exports.updateProjectStatus = async (req, res, next) => {
                 ]
                 findProject.activeStatus = status
                 await findProject.save()
-
+                io.getIO().emit('updatestudent', {
+                    actions: 'update-student',
+                    data: findProject._id.toString(),
+                })
                 res.status(200).json('status 1 updated')
             }
         }
@@ -606,7 +652,269 @@ exports.putCandidateFiles = async (req, res, next) => {
         } else {
         }
 
+        io.getIO().emit('updatestudent', {
+            actions: 'update-student',
+            data: findProject._id.toString(),
+        })
+
         res.status(201).json('updated candidate files')
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500
+        }
+        next(error)
+    }
+}
+
+/** remove candidate files */
+exports.removeCandidateFile = async (req, res, next) => {
+    try {
+        const projectId = req.params.pid
+        const fileId = req.params.fid
+        const secId = req.params.secId
+
+        const findProject = await ProjectModel.findById(projectId).populate(
+            'files.fileId'
+        )
+        if (!findProject) {
+            const error = new Error('Project not found!')
+            error.statusCode = 404
+            throw error
+        }
+
+        const findMainFile = await ProjectFileModel.findOne({ fileId: fileId })
+        if (!findMainFile) {
+            const error = new Error('No File  found!')
+            error.statusCode = 404
+            throw error
+        }
+        console.log('filed', findMainFile)
+        /** gather all files */
+        let allFiles = [...findProject.files]
+
+        /** remove the file from project files */
+        let newFiles = allFiles.filter((data) => {
+            if (data._id.toString() === secId.toString()) {
+                return
+            } else {
+                return data
+            }
+        })
+        /** save the file */
+        findProject.files = newFiles
+        await findProject.save()
+
+        const initFileId = findMainFile.fileId
+
+        if (initFileId) {
+            if (!initFileId || initFileId === 'undefined') {
+                return res.status(400).send('no document found')
+            } else {
+                const newFileId = new mongoose.Types.ObjectId(initFileId)
+                const file = await gfs.files.findOne({ _id: newFileId })
+                const gsfb = new mongoose.mongo.GridFSBucket(conn.db, {
+                    bucketName: 'chussfiles',
+                })
+
+                gsfb.delete(file._id, async (err, gridStore) => {
+                    if (err) {
+                        return next(err)
+                    }
+
+                    console.log('file chunks deletion registration')
+
+                    await ProjectFileModel.findByIdAndDelete(findMainFile._id)
+                    console.log('registration finally deleted registration')
+                    io.getIO().emit('updatestudent', {
+                        actions: 'update-student',
+                        data: findProject._id.toString(),
+                    })
+                    res.status(200).json(`File has been deleted`)
+                    //res.status(200).end()
+                    return
+                })
+            }
+        } else {
+            await ProjectFileModel.findByIdAndDelete(findMainFile._id)
+            console.log('not allowed registration finally deleted registration')
+            io.getIO().emit('updatestudent', {
+                actions: 'update-student',
+                data: findProject._id.toString(),
+            })
+            res.status(200).json(`File has been deleted`)
+        }
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500
+        }
+        next(error)
+    }
+}
+/** remove viva files */
+exports.removePVivaFile = async (req, res, next) => {
+    try {
+        const projectId = req.params.pid
+        const fileId = req.params.fid
+        const secId = req.params.secId
+        console.log('testing it', projectId, fileId, secId, secId.toString())
+        const findProject = await ProjectModel.findById(projectId).populate(
+            'files.fileId'
+        )
+        if (!findProject) {
+            const error = new Error('Project not found!')
+            error.statusCode = 404
+            throw error
+        }
+
+        const findMainFile = await ProjectFileModel.findOne({
+            fileId: fileId,
+        })
+        if (!findMainFile) {
+            const error = new Error('No File  found!')
+            error.statusCode = 404
+            throw error
+        }
+        console.log('filed', findMainFile, 'ee', findProject)
+        /** gather all files */
+        let allFiles = [...findProject.vivaFiles]
+        /** remove the file from project files */
+        console.log('allFiles', allFiles)
+        let newFiles = allFiles.filter((data) => {
+            if (data._id.toString() === secId.toString()) {
+                return
+            } else {
+                return data
+            }
+        })
+        /** save the file */
+        findProject.vivaFiles = newFiles
+        console.log('allFiles', newFiles)
+        await findProject.save()
+
+        const initFileId = findMainFile.fileId
+
+        if (initFileId) {
+            if (!initFileId || initFileId === 'undefined') {
+                return res.status(400).send('no document found')
+            } else {
+                const newFileId = new mongoose.Types.ObjectId(initFileId)
+                const file = await gfs.files.findOne({ _id: newFileId })
+                const gsfb = new mongoose.mongo.GridFSBucket(conn.db, {
+                    bucketName: 'chussfiles',
+                })
+
+                gsfb.delete(file._id, async (err, gridStore) => {
+                    if (err) {
+                        return next(err)
+                    }
+
+                    console.log('file chunks deletion registration')
+
+                    await ProjectFileModel.findByIdAndDelete(findMainFile._id)
+                    console.log('registration finally deleted registration')
+                    io.getIO().emit('updatestudent', {
+                        actions: 'update-student',
+                        data: findProject._id.toString(),
+                    })
+                    res.status(200).json(`File has been deleted`)
+                    //res.status(200).end()
+                    return
+                })
+            }
+        } else {
+            await ProjectFileModel.findByIdAndDelete(findMainFile._id)
+            console.log('not allowed registration finally deleted registration')
+            io.getIO().emit('updatestudent', {
+                actions: 'update-student',
+                data: findProject._id.toString(),
+            })
+            res.status(200).json(`File has been deleted`)
+        }
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500
+        }
+        next(error)
+    }
+}
+/** final submission files */
+exports.removePFSubmissionFile = async (req, res, next) => {
+    try {
+        const projectId = req.params.pid
+        const fileId = req.params.fid
+        const secId = req.params.secId
+
+        const findProject = await ProjectModel.findById(projectId).populate(
+            'files.fileId'
+        )
+        if (!findProject) {
+            const error = new Error('Project not found!')
+            error.statusCode = 404
+            throw error
+        }
+
+        const findMainFile = await ProjectFileModel.findOne({
+            fileId: fileId,
+        })
+        if (!findMainFile) {
+            const error = new Error('No File  found!')
+            error.statusCode = 404
+            throw error
+        }
+        console.log('filed', findMainFile)
+        /** gather all files */
+        let allFiles = [...findProject.FinalSubmissionFiles]
+        /** remove the file from project files */
+        let newFiles = allFiles.filter((data) => {
+            if (data._id.toString() === secId.toString()) {
+                return
+            } else {
+                return data
+            }
+        })
+        /** save the file */
+        findProject.FinalSubmissionFiles = newFiles
+        await findProject.save()
+
+        const initFileId = findMainFile.fileId
+
+        if (initFileId) {
+            if (!initFileId || initFileId === 'undefined') {
+                return res.status(400).send('no document found')
+            } else {
+                const newFileId = new mongoose.Types.ObjectId(initFileId)
+                const file = await gfs.files.findOne({ _id: newFileId })
+                const gsfb = new mongoose.mongo.GridFSBucket(conn.db, {
+                    bucketName: 'chussfiles',
+                })
+
+                gsfb.delete(file._id, async (err, gridStore) => {
+                    if (err) {
+                        return next(err)
+                    }
+
+                    console.log('file chunks deletion registration')
+
+                    await ProjectFileModel.findByIdAndDelete(findMainFile._id)
+                    console.log('registration finally deleted registration')
+                    io.getIO().emit('updatestudent', {
+                        actions: 'update-student',
+                        data: findProject._id.toString(),
+                    })
+                    res.status(200).json(`File has been deleted`)
+                    //res.status(200).end()
+                    return
+                })
+            }
+        } else {
+            await ProjectFileModel.findByIdAndDelete(findMainFile._id)
+            console.log('not allowed registration finally deleted registration')
+            io.getIO().emit('updatestudent', {
+                actions: 'update-student',
+                data: findProject._id.toString(),
+            })
+            res.status(200).json(`File has been deleted`)
+        }
     } catch (error) {
         if (!error.statusCode) {
             error.statusCode = 500
@@ -657,6 +965,10 @@ exports.putVivaFiles = async (req, res, next) => {
             }
         } else {
         }
+        io.getIO().emit('updatestudent', {
+            actions: 'update-student',
+            data: findProject._id.toString(),
+        })
 
         res.status(201).json('updated viva success')
     } catch (error) {
@@ -682,6 +994,10 @@ exports.updateVivaDefense = async (req, res, next) => {
 
         findProject.DateOfDefense = DateOfDefense
         await findProject.save()
+        io.getIO().emit('updatestudent', {
+            actions: 'update-student',
+            data: findProject._id.toString(),
+        })
 
         res.status(201).json('updated viva success')
     } catch (error) {
@@ -736,6 +1052,10 @@ exports.putFinalSubmissionFiles = async (req, res, next) => {
         }
 
         res.status(201).json('updated final submit files success')
+        io.getIO().emit('updatestudent', {
+            actions: 'update-student',
+            data: findProject._id.toString(),
+        })
     } catch (error) {
         if (!error.statusCode) {
             error.statusCode = 500
@@ -759,7 +1079,10 @@ exports.updateDateOfFinalSubmission = async (req, res, next) => {
 
         findProject.FinalSubmissionDate = FinalSubmissionDate
         await findProject.save()
-
+        io.getIO().emit('updatestudent', {
+            actions: 'update-student',
+            data: findProject._id.toString(),
+        })
         res.status(201).json('updated final submission date success')
     } catch (error) {
         if (!error.statusCode) {
@@ -784,7 +1107,10 @@ exports.updateDateOfGraduation = async (req, res, next) => {
 
         findProject.GraduationDate = GraduationDate
         await findProject.save()
-
+        io.getIO().emit('updatestudent', {
+            actions: 'update-student',
+            data: findProject._id.toString(),
+        })
         res.status(201).json('updated graduation Date')
     } catch (error) {
         if (!error.statusCode) {
@@ -847,6 +1173,10 @@ exports.updateResubmission = async (req, res, next) => {
 
                         findProject.projectStatus = [...newDataArray]
                         await findProject.save()
+                        io.getIO().emit('updatestudent', {
+                            actions: 'update-student',
+                            data: findProject._id.toString(),
+                        })
                         return res.status(201).json('submission status changed')
                     }
                 }
@@ -871,6 +1201,10 @@ exports.updateResubmission = async (req, res, next) => {
                             ...filteredArray,
                         ]
                         await findProject.save()
+                        io.getIO().emit('updatestudent', {
+                            actions: 'update-student',
+                            data: findProject._id.toString(),
+                        })
                         return res.status(201).json('submission status changed')
                     } else {
                         findProject.projectStatus = [...newDataArray]
@@ -894,12 +1228,20 @@ exports.updateResubmission = async (req, res, next) => {
                     ]
 
                     await findProject.save()
-                   res.status(201).json('submission status changed')
+                    io.getIO().emit('updatestudent', {
+                        actions: 'update-student',
+                        data: findProject._id.toString(),
+                    })
+                    res.status(201).json('submission status changed')
                     return
                 }
             }
             //res.status(201).json('submission status changed')
         } else {
+            io.getIO().emit('updatestudent', {
+                actions: 'update-student',
+                data: findProject._id.toString(),
+            })
             res.status(201).json('submission status changed')
         }
     } catch (error) {

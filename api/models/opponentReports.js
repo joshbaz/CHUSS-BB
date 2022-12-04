@@ -20,6 +20,12 @@ const opponentReportSchema = mongoose.Schema(
         ungraded: { type: Boolean },
         reportStatus: String,
         marked: { type: Boolean, default: false },
+        creationDate: {
+            type: String,
+        },
+        submissionDate: {
+            type: String,
+        },
         reportFiles: [
             {
                 files: {

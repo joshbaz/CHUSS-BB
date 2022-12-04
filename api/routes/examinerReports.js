@@ -32,7 +32,6 @@ const storage = new GridFsStorage({
         useUnifiedTopology: true,
     },
     file: (req, file) => {
-        console.log(file, 'fs', req.body.score)
         return new Promise((resolve, reject) => {
             crypto.randomBytes(16, (err, buf) => {
                 if (err) {
@@ -43,11 +42,17 @@ const storage = new GridFsStorage({
                     buf.toString('hex') + path.extname(file.originalname)
                 const filesExtenstions = path.extname(file.originalname)
                 console.log('extensiond', path.extname(file.originalname))
+                const extractNameOnly = path.basename(
+                    file.originalname,
+                    filesExtenstions
+                )
                 const fileInfo = {
                     filename: filename,
                     bucketName: 'chussfiles',
                     filesExtensions: filesExtenstions,
-                    metadata: req.body,
+                    metadata: {
+                        name: extractNameOnly,
+                    },
                 }
                 resolve(fileInfo)
             })
@@ -85,4 +90,9 @@ router.patch(
 router.get('/v1/getReport/:rid', examinerReport.getExaminerReport)
 /** get all reports */
 router.get('/v1/allexaminerReports', examinerReport.getAllExaminerReports)
+
+router.delete(
+    '/v1/remove/ExFiles/:rpid/:fid/:secId',
+    examinerReport.removeExaminerReportFile
+)
 module.exports = router

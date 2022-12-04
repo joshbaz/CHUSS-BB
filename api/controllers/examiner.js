@@ -4,6 +4,9 @@ const ProjectModel = require('../models/projects')
 const ProjectFileModel = require('../models/projectFiles')
 const ExaminerModel = require('../models/examiners')
 const ExaminerReportModel = require('../models/examinerReports')
+const Moments = require('moment-timezone')
+
+const io = require('../../socket')
 
 const multer = require('multer')
 let mongo = require('mongodb')
@@ -66,6 +69,8 @@ exports.createProjectExaminer = async (req, res, next) => {
             error.statusCode = 404
             throw error
         }
+
+        const creationDate = Moments().tz('Africa/Kampala').format()
 
         /** destructure the payment Info of external */
         let paymentInfo = []
@@ -199,6 +204,7 @@ exports.createProjectExaminer = async (req, res, next) => {
             examiner: savedExaminer._id,
             score: 0,
             reportStatus: 'pending',
+            creationDate: creationDate,
         })
 
         let savedReport = await examinerReport.save()
@@ -216,6 +222,11 @@ exports.createProjectExaminer = async (req, res, next) => {
         ]
 
         await findProject.save()
+
+        io.getIO().emit('updatestudent', {
+            actions: 'update-student',
+            data: findProject._id.toString(),
+        })
 
         res.status(201).json('Examiner has been successfully assigned')
     } catch (error) {
@@ -242,6 +253,8 @@ exports.assignExaminer = async (req, res, next) => {
             error.statusCode = 404
             throw error
         }
+
+        const creationDate = Moments().tz('Africa/Kampala').format()
 
         // await items.map(async (element) => {
         //     /** find if the examiner is there */
@@ -310,9 +323,10 @@ exports.assignExaminer = async (req, res, next) => {
 
             let examinerToSave = {
                 examinerId: findExaminer._id,
-                submissionType: findProject.submissionStatus === 'resubmission'
-                    ? 'resubmission'
-                    : 'normal',
+                submissionType:
+                    findProject.submissionStatus === 'resubmission'
+                        ? 'resubmission'
+                        : 'normal',
             }
 
             if (findExaminer.typeOfExaminer === 'External') {
@@ -337,6 +351,7 @@ exports.assignExaminer = async (req, res, next) => {
                 examiner: findExaminer._id,
                 score: 0,
                 reportStatus: 'pending',
+                creationDate: creationDate,
             })
 
             let savedReport = await examinerReport.save()
@@ -355,6 +370,10 @@ exports.assignExaminer = async (req, res, next) => {
 
             await findProject.save()
             if (titerations === items.length) {
+                io.getIO().emit('updatestudent', {
+                    actions: 'update-student',
+                    data: findProject._id.toString(),
+                })
                 res.status(201).json(
                     `${
                         items.length > 1 ? 'Examiners' : 'Examiner'
@@ -691,6 +710,10 @@ exports.createProjectAppExaminerFile = async (req, res, next) => {
                     /** save the project */
                     findProject.examiners = newProjectExaminers
                     await findProject.save()
+                    io.getIO().emit('updateex-project', {
+                        actions: 'update-app-letter',
+                        data: findProject._id.toString(),
+                    })
                     res.status(201).json('Project Appointment Letter Added ')
                     return
                 }
@@ -848,6 +871,11 @@ exports.removeProjectExaminersR = async (req, res, next) => {
                                         console.log(
                                             'registration finally deleted registration'
                                         )
+
+                                        io.getIO().emit('updatestudent', {
+                                            actions: 'update-student',
+                                            data: findProject._id.toString(),
+                                        })
                                         res.status(200).json(
                                             `examiner removed from project`
                                         )
@@ -863,6 +891,10 @@ exports.removeProjectExaminersR = async (req, res, next) => {
                             console.log(
                                 'not allowed file finally deleted registration'
                             )
+                            io.getIO().emit('updatestudent', {
+                                actions: 'update-student',
+                                data: findProject._id.toString(),
+                            })
                             res.status(200).json(
                                 `examiner removed from project`
                             )
@@ -881,6 +913,11 @@ exports.removeProjectExaminersR = async (req, res, next) => {
 
                         findProject.examiners = newAllExaminers
                         await findProject.save()
+
+                        io.getIO().emit('updatestudent', {
+                            actions: 'update-student',
+                            data: findProject._id.toString(),
+                        })
                         res.status(200).json('examiner removed from project')
                     }
                     /** Done */

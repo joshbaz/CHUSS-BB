@@ -106,4 +106,22 @@ router.get('/v1/individual/:id', opponentController.getIndividualOpponent)
 /** get paginated examiners */
 router.get('/v1/popponents', opponentController.getPaginatedOpponents)
 
+/** delete project App letter */
+router.patch(
+    '/v1/letter/projectopponent/delete/:pid/:fid',
+    opponentController.deleteProjectAppLetter
+)
+
+
+router.patch(
+    '/v1/letter/projectopponent/add/:pid/:eid',
+    uploadMiddleware,
+    opponentController.createProjectAppOpponentFile
+)
+
+router.patch(
+    '/v1/projectopponent/remove/:pid/:eid/:secid',
+    opponentController.removeProjectOpponentsR
+)
+
 module.exports = router

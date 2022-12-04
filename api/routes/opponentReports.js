@@ -85,4 +85,11 @@ router.patch(
     opponentReport.updateOpponentReport
 )
 router.get('/v1/getReport/:rid', opponentReport.getOpponentReport)
+/** get all reports */
+router.get('/v1/allopponentReports', opponentReport.getAllOpponentReports)
+
+router.delete(
+    '/v1/remove/ExFiles/:rpid/:fid/:secId',
+    opponentReport.removeOpponentReportFile
+)
 module.exports = router

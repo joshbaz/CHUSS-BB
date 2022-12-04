@@ -126,8 +126,24 @@ router.put(
     uploadMiddleware,
     projectController.putVivaFiles
 )
+/** remove files */
+/** remove candidate files */
+router.delete(
+    '/v1/remove/cfiles/:pid/:fid/:secId',
+    projectController.removeCandidateFile
+)
+/** remove viva files */
+router.delete(
+    '/v1/remove/vfiles/:pid/:fid/:secId',
+    projectController.removePVivaFile
+)
 
-/** viva files */
+/** remove submission files */
+router.delete(
+    '/v1/remove/sfiles/:pid/:fid/:secId',
+    projectController.removePFSubmissionFile
+)
+/** viva defense */
 router.put('/v1/vivadefense/update/:id', projectController.updateVivaDefense)
 
 /** date of final submission */
@@ -143,7 +159,10 @@ router.put(
 )
 
 /** date of final submission */
-router.patch('/v1/resubmission/update/:id', projectController.updateResubmission)
+router.patch(
+    '/v1/resubmission/update/:id',
+    projectController.updateResubmission
+)
 
 //DeleteFiles
 const deleteFile = (id) => {

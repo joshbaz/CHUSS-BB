@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 const ProjectModel = require('../models/projects')
 const SupervisorModel = require('../models/supervisors')
-
+const io = require('../../socket')
 /** create Supervisor From Project */
 exports.createProjectSupervisor = async (req, res, next) => {
     try {
@@ -46,7 +46,10 @@ exports.createProjectSupervisor = async (req, res, next) => {
         findProject.supervisor = [...findProject.supervisor, examinerToSave]
 
         await findProject.save()
-
+        io.getIO().emit('updatestudent', {
+            actions: 'update-student',
+            data: findProject._id.toString(),
+        })
         res.status(201).json('Supervisor has been successfully assigned')
     } catch (error) {
         if (!error.statusCode) {
@@ -95,6 +98,10 @@ exports.assignSupervisor = async (req, res, next) => {
             await findProject.save()
 
             if (titerations === items.length) {
+                io.getIO().emit('updatestudent', {
+                    actions: 'update-student',
+                    data: findProject._id.toString(),
+                })
                 res.status(201).json(
                     `${
                         items.length > 1 ? 'Supervisors' : 'Supervisor'
@@ -314,14 +321,16 @@ exports.removeProjectSupervisor = async (req, res, next) => {
             }
         })
 
-     
         // console.log(newProjectSupervisors, 'new coll')
         // console.log(ProjectSupervisors, 'orig coll', findSupervisor._id)
 
         findProject.supervisor = newProjectSupervisors
 
         await findProject.save()
-
+        io.getIO().emit('updatestudent', {
+            actions: 'update-student',
+            data: findProject._id.toString(),
+        })
         res.status(201).json('Supervisor has been successfully removed')
     } catch (error) {
         if (!error.statusCode) {

@@ -5,6 +5,31 @@ const ProjectFileModel = require('../models/projectFiles')
 const OpponentModel = require('../models/opponents')
 const OpponentReportModel = require('../models/opponentReports')
 const path = require('path')
+const io = require('../../socket')
+const Moments = require('moment-timezone')
+let mongo = require('mongodb')
+var Grid = require('gridfs-stream')
+require('dotenv').config()
+const mongoUri = process.env.MONGO_R_URL
+
+const conn = mongoose.createConnection(mongoUri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+})
+
+let gfs
+let gridfsBucket
+conn.once('open', () => {
+    gridfsBucket = new mongoose.mongo.GridFSBucket(conn.db, {
+        bucketName: 'chussfiles',
+    })
+
+    gfs = Grid(conn.db, mongo)
+    gfs.collection('chussfiles')
+    // gfs = Grid(conn.db)
+    // gfs.collection('reportFiless')
+})
+
 /** create opponent from project */
 exports.createProjectOpponent = async (req, res, next) => {
     try {
@@ -183,6 +208,10 @@ exports.createProjectOpponent = async (req, res, next) => {
         ]
 
         await findProject.save()
+        io.getIO().emit('updatestudent', {
+            actions: 'update-student',
+            data: findProject._id.toString(),
+        })
 
         res.status(201).json('Opponent has been successfully assigned')
     } catch (error) {
@@ -261,6 +290,10 @@ exports.assignOpponent = async (req, res, next) => {
             await findProject.save()
 
             if (titerations === items.length) {
+                io.getIO().emit('updatestudent', {
+                    actions: 'update-student',
+                    data: findProject._id.toString(),
+                })
                 res.status(201).json(
                     `${
                         items.length > 1 ? 'Opponents' : 'Opponent'
@@ -291,7 +324,6 @@ exports.getAllOpponents = async (req, res, next) => {
         next(error)
     }
 }
-
 
 /** paginated opponents */
 exports.getPaginatedOpponents = async (req, res, next) => {
@@ -343,7 +375,6 @@ exports.getPaginatedOpponents = async (req, res, next) => {
                 })
             }
         }
-        
     } catch (error) {
         if (!error.statusCode) {
             error.statusCode = 500
@@ -351,7 +382,6 @@ exports.getPaginatedOpponents = async (req, res, next) => {
         next(error)
     }
 }
-
 
 /**
  * get single Opponent
@@ -364,7 +394,6 @@ exports.getIndividualOpponent = async (req, res, next) => {
         let getOpponent = await OpponentModel.findById(id).populate(
             'generalAppointmentLetters.fileId'
         )
-       
 
         if (!getOpponent) {
             const error = new Error('Opponent not found')
@@ -373,6 +402,371 @@ exports.getIndividualOpponent = async (req, res, next) => {
         }
 
         res.status(200).json(getOpponent)
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500
+        }
+        next(error)
+    }
+}
+
+/** Delete the project Appointment Letter */
+exports.deleteProjectAppLetter = async (req, res, next) => {
+    try {
+        const projectId = req.params.pid
+        const projectAppLId = req.params.fid
+
+        const findProject = await ProjectModel.findById(projectId)
+        if (!findProject) {
+            const error = new Error('Project not found!')
+            error.statusCode = 404
+            throw error
+        }
+
+        const findFileDetail = await ProjectFileModel.findById(projectAppLId)
+        if (!findFileDetail) {
+            const error = new Error('File not found!')
+            error.statusCode = 404
+            throw error
+        }
+
+        let ProjectExaminers = [...findProject.opponents]
+
+        let newProjectExaminers = ProjectExaminers.map((data) => {
+            if (
+                !data.projectAppointmentLetter ||
+                findFileDetail._id.toString() !==
+                    data.projectAppointmentLetter.toString()
+            ) {
+                return data
+            } else {
+                return {
+                    opponentId: data.opponentId,
+                    preferredPayment: data.preferredPayment,
+                }
+            }
+        })
+
+        findProject.opponents = newProjectExaminers
+        await findProject.save()
+
+        if (findFileDetail.fileId) {
+            const initFileId = findFileDetail.fileId
+            console.log('initFileId', initFileId)
+            if (!initFileId || initFileId === 'undefined') {
+                return res.status(400).send('no document found')
+            } else {
+                const newFileId = new mongoose.Types.ObjectId(initFileId)
+                console.log('newFileId', newFileId)
+
+                const file = await gfs.files.findOne({ _id: newFileId })
+                const gsfb = new mongoose.mongo.GridFSBucket(conn.db, {
+                    bucketName: 'chussfiles',
+                })
+
+                gsfb.delete(file._id, async (err, gridStore) => {
+                    if (err) {
+                        return next(err)
+                    }
+
+                    console.log('file chunks deletion registration')
+
+                    await ProjectFileModel.findByIdAndDelete(projectAppLId)
+                    console.log('registration finally deleted registration')
+                    res.status(200).json(`Project App Letter has been deleted`)
+                    //res.status(200).end()
+                    return
+                })
+            }
+        } else {
+            await ProjectFileModel.findByIdAndDelete(projectAppLId)
+            console.log('not allowed file finally deleted registration')
+            res.status(200).json(`File has been deleted`)
+        }
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500
+        }
+        next(error)
+    }
+}
+
+/** add project file Letter */
+exports.createProjectAppOpponentFile = async (req, res, next) => {
+    try {
+        const projectId = req.params.pid
+        const projectExaminer = req.params.eid
+
+        const findProject = await ProjectModel.findById(projectId)
+        if (!findProject) {
+            const error = new Error('Project not found!')
+            error.statusCode = 404
+            throw error
+        }
+
+        const findExaminer = await OpponentModel.findById(projectExaminer)
+        if (!findExaminer) {
+            const error = new Error('Examiner not found!')
+            error.statusCode = 404
+            throw error
+        }
+
+        if (req.files) {
+            for (let iteration = 0; iteration < req.files.length; iteration++) {
+                if (req.files[iteration].metadata.name === 'projectAppLetter') {
+                    const filesExtenstions = path
+                        .extname(req.files[iteration].originalname)
+                        .slice(1)
+                    const saveFile = new ProjectFileModel({
+                        _id: mongoose.Types.ObjectId(),
+                        fileId: req.files[iteration].id,
+                        fileName: req.files[iteration].metadata.name,
+                        fileExtension: filesExtenstions,
+                        fileType: req.files[iteration].mimetype,
+                        fileSize: req.files[iteration].size,
+                        description: 'projectAppLetter',
+                    })
+
+                    let savedFiles = await saveFile.save()
+
+                    //examinerToSave.projectAppointmentLetter = savedFiles._id
+                    //transfer details of savedFile
+                    let ProjectExaminers = [...findProject.opponents]
+
+                    let newProjectExaminers = ProjectExaminers.map((data) => {
+                        if (
+                            findExaminer._id.toString() !==
+                            data.opponentId.toString()
+                        ) {
+                            return data
+                        } else {
+                            return {
+                                opponentId: data.opponentId,
+                                projectAppointmentLetter: savedFiles._id,
+                                preferredPayment: data.preferredPayment,
+                            }
+                        }
+                    })
+
+                    /** save the project */
+                    findProject.opponents = newProjectExaminers
+                    await findProject.save()
+                    io.getIO().emit('updateex-project', {
+                        actions: 'update-app-letter',
+                        data: findProject._id.toString(),
+                    })
+                    res.status(201).json('Project Appointment Letter Added ')
+                    return
+                }
+            }
+        } else {
+            res.status(404).json('no file to upload')
+        }
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500
+        }
+        next(error)
+    }
+}
+
+/** remove project opponent */
+exports.removeProjectOpponentsR = async (req, res, next) => {
+    try {
+        const sectionId = req.params.secid
+        const examinerId = req.params.eid
+        const projectId = req.params.pid
+
+        const findProject = await ProjectModel.findById(projectId).populate(
+            'opponentReports.reportId'
+        )
+        if (!findProject) {
+            const error = new Error('Project not found!')
+            error.statusCode = 404
+            throw error
+        }
+
+        const findExaminer = await OpponentModel.findById(examinerId)
+        if (!findExaminer) {
+            const error = new Error('Examiner not found!')
+            error.statusCode = 404
+            throw error
+        }
+
+        const findReports = await OpponentReportModel.find({
+            examiner: examinerId,
+            projectId: projectId,
+            marked: false,
+        })
+        if (!findReports) {
+            const error = new Error('No Reports not found!')
+            error.statusCode = 404
+            throw error
+        }
+
+        if (findReports.length < 1) {
+            res.status(200).json('You cannot delete a Marked Report!')
+        } else {
+            /** query whether the secid type is resubmission /normal */
+            let allProjectExaminers = [...findProject.opponents]
+
+            /** get the secId & type */
+            let secDetails = allProjectExaminers.find(
+                (element) => element._id.toString() === sectionId.toString()
+            )
+
+            if (secDetails) {
+                /** query out reports */
+                let allProjectExamReports = [...findProject.opponentReports]
+                console.log('allProjectExamReports', allProjectExamReports)
+                let foundReports = allProjectExamReports.find(
+                    (element) =>
+                        element.reportId.opponent.toString() ===
+                            secDetails.opponentId.toString() &&
+                        element.reportId.marked === false
+                )
+
+                if (foundReports) {
+                    /** remove the report from project */
+                    console.log('saved new ', foundReports)
+                    let newAllReports = allProjectExamReports.filter((data) => {
+                        if (
+                            foundReports._id.toString() !== data._id.toString()
+                        ) {
+                            return data
+                        } else {
+                            return
+                        }
+                    })
+
+                    findProject.opponentReports = newAllReports
+                    await findProject.save()
+                    console.log('saved new ')
+                    /** Delete the report from reports */
+                    await OpponentReportModel.findByIdAndDelete(
+                        foundReports.reportId._id
+                    )
+                    /** remove project appointment if any and examiner from project */
+                    if (secDetails.projectAppointmentLetter) {
+                        const findFileDetail = await ProjectFileModel.findById(
+                            secDetails.projectAppointmentLetter
+                        )
+                        if (!findFileDetail) {
+                            const error = new Error('File not found!')
+                            error.statusCode = 404
+                            throw error
+                        }
+
+                        let newAllExaminers = allProjectExaminers.filter(
+                            (data) => {
+                                if (
+                                    secDetails._id.toString() !==
+                                    data._id.toString()
+                                ) {
+                                    return data
+                                }
+                            }
+                        )
+
+                        findProject.opponents = newAllExaminers
+                        await findProject.save()
+                        /** delete the project file found */
+                        if (findFileDetail.fileId) {
+                            const initFileId = findFileDetail.fileId
+                            console.log('initFileId', initFileId)
+                            if (!initFileId || initFileId === 'undefined') {
+                                return res.status(400).send('no document found')
+                            } else {
+                                const newFileId = new mongoose.Types.ObjectId(
+                                    initFileId
+                                )
+                                console.log('newFileId', newFileId)
+
+                                const file = await gfs.files.findOne({
+                                    _id: newFileId,
+                                })
+                                const gsfb = new mongoose.mongo.GridFSBucket(
+                                    conn.db,
+                                    {
+                                        bucketName: 'chussfiles',
+                                    }
+                                )
+
+                                gsfb.delete(
+                                    file._id,
+                                    async (err, gridStore) => {
+                                        if (err) {
+                                            return next(err)
+                                        }
+
+                                        console.log(
+                                            'file chunks deletion registration'
+                                        )
+
+                                        await ProjectFileModel.findByIdAndDelete(
+                                            findFileDetail._id
+                                        )
+                                        console.log('opponnet finally deleted ')
+
+                                        io.getIO().emit('updatestudent', {
+                                            actions: 'update-student',
+                                            data: findProject._id.toString(),
+                                        })
+                                        res.status(200).json(
+                                            `opponnet removed from project`
+                                        )
+                                        //res.status(200).end()
+                                        return
+                                    }
+                                )
+                            }
+                        } else {
+                            await ProjectFileModel.findByIdAndDelete(
+                                findFileDetail._id
+                            )
+                            console.log(
+                                'not allowed file finally deleted registration'
+                            )
+                            io.getIO().emit('updatestudent', {
+                                actions: 'update-student',
+                                data: findProject._id.toString(),
+                            })
+                            res.status(200).json(
+                                `opponent removed from project`
+                            )
+                        }
+                    } else {
+                        let newAllExaminers = allProjectExaminers.filter(
+                            (data) => {
+                                if (
+                                    secDetails._id.toString() !==
+                                    data._id.toString()
+                                ) {
+                                    return data
+                                }
+                            }
+                        )
+
+                        findProject.opponents = newAllExaminers
+                        await findProject.save()
+
+                        io.getIO().emit('updatestudent', {
+                            actions: 'update-student',
+                            data: findProject._id.toString(),
+                        })
+                        res.status(200).json('opponent removed from project')
+                    }
+                    /** Done */
+                } else {
+                    res.status(200).json('Opponent cannot be removed')
+                }
+            } else {
+                res.status(200).json('Opponent cannot be removed')
+            }
+            /** get returned values */
+
+            // res.status(200).json('returned values')
+        }
     } catch (error) {
         if (!error.statusCode) {
             error.statusCode = 500

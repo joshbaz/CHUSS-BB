@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 const ProjectModel = require('../models/projects')
 const DoctoralMModel = require('../models/doctoralmembers')
-
+const io = require('../../socket')
 /** create Supervisor From Project */
 exports.createProjectDMember = async (req, res, next) => {
     try {
@@ -13,7 +13,6 @@ exports.createProjectDMember = async (req, res, next) => {
             postalAddress,
             countryOfResidence,
             placeOfWork,
-           
         } = req.body
         const projectId = req.params.pid
         const findProject = await ProjectModel.findById(projectId)
@@ -44,9 +43,16 @@ exports.createProjectDMember = async (req, res, next) => {
         }
 
         /** save the examiner to the project itself */
-        findProject.doctoralmembers = [...findProject.doctoralmembers, examinerToSave]
+        findProject.doctoralmembers = [
+            ...findProject.doctoralmembers,
+            examinerToSave,
+        ]
 
         await findProject.save()
+        io.getIO().emit('updatestudent', {
+            actions: 'update-student',
+            data: findProject._id.toString(),
+        })
 
         res.status(201).json('Committee Member has been successfully assigned')
     } catch (error) {
@@ -92,10 +98,17 @@ exports.assignMember = async (req, res, next) => {
                 doctoralmemberId: findExaminer._id,
             }
 
-            findProject.doctoralmembers = [...findProject.doctoralmembers, examinerToSave]
+            findProject.doctoralmembers = [
+                ...findProject.doctoralmembers,
+                examinerToSave,
+            ]
             await findProject.save()
 
             if (titerations === items.length) {
+                io.getIO().emit('updatestudent', {
+                    actions: 'update-student',
+                    data: findProject._id.toString(),
+                })
                 res.status(201).json(
                     `${
                         items.length > 1
