@@ -295,3 +295,57 @@ exports.updateCMember = async (req, res, next) => {
         next(error)
     }
 }
+
+
+/** remove Doctoral Member From Project */
+exports.removeProjectDCMember = async (req, res, next) => {
+    try {
+        const projectId = req.params.pid
+        const dcMemberId = req.params.sid
+        const findProject = await ProjectModel.findById(projectId)
+
+        if (!findProject) {
+            const error = new Error('Committee Member not found')
+            error.statusCode = 404
+            throw error
+        }
+
+        const findDMember = await DoctoralMModel.findById(dcMemberId)
+
+        if (!findDMember) {
+            const error = new Error('Supervisor Not Found')
+            error.statusCode = 404
+            throw error
+        }
+
+        let ProjectDCMember = [...findProject.doctoralmembers]
+
+        let newProjectDCMembers = ProjectDCMember.filter((data) => {
+            if (
+                findDMember._id.toString() !== data.doctoralmemberId.toString()
+            ) {
+                return data
+            } else {
+                console.log('nfound one')
+                return
+            }
+        })
+
+        // console.log(newProjectSupervisors, 'new coll')
+        // console.log(ProjectSupervisors, 'orig coll', findSupervisor._id)
+
+        findProject.doctoralmembers = newProjectDCMembers
+
+        await findProject.save()
+        io.getIO().emit('updatestudent', {
+            actions: 'update-student',
+            data: findProject._id.toString(),
+        })
+        res.status(201).json('Committee Member has been successfully removed')
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500
+        }
+        next(error)
+    }
+}

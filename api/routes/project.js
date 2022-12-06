@@ -164,6 +164,9 @@ router.patch(
     projectController.updateResubmission
 )
 
+/** delete student */
+router.delete('/v1/student/remove/:pid', projectController.deleteProject)
+
 //DeleteFiles
 const deleteFile = (id) => {
     if (!id || id === 'undefined') return res.status(400).send('no file found')

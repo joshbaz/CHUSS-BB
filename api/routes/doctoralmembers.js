@@ -25,4 +25,10 @@ router.get('/v1/pdcmembers', doctoralController.getPaginatedMembers)
 /** update examiners */
 router.patch('/v1/update/:id', doctoralController.updateCMember)
 
+/** remove supervisors from project */
+router.patch(
+    '/v1/project/remove/:pid/:sid',
+    doctoralController.removeProjectDCMember
+)
+
 module.exports = router

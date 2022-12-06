@@ -13,6 +13,7 @@ const multer = require('multer')
 let mongo = require('mongodb')
 const { GridFsStorage } = require('multer-gridfs-storage')
 var Grid = require('gridfs-stream')
+const e = require('cors')
 require('dotenv').config()
 const mongoUri = process.env.MONGO_R_URL
 const conn = mongoose.createConnection(mongoUri, {
@@ -1243,6 +1244,55 @@ exports.updateResubmission = async (req, res, next) => {
                 data: findProject._id.toString(),
             })
             res.status(201).json('submission status changed')
+        }
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500
+        }
+        next(error)
+    }
+}
+
+/** delete the student */
+exports.deleteProject = async (req, res, next) => {
+    try {
+        const projectId = req.params.pid
+
+        const findProject = await ProjectModel.findById(projectId).populate(
+            'student'
+        )
+        if (!findProject) {
+            const error = new Error('No project found')
+            error.statusCode = 404
+            throw error
+        }
+
+        if (
+            findProject.files.length > 0 ||
+            findProject.supervisor.length > 0 ||
+            findProject.registration.length > 0 ||
+            findProject.doctoralmembers.length > 0 ||
+            findProject.examiners.length > 0 ||
+            findProject.examinerReports.length > 0 ||
+            findProject.opponents.length > 0 ||
+            findProject.opponentReports.length > 0 ||
+            findProject.vivaFiles.length > 0 ||
+            findProject.FinalSubmissionFiles.length > 0
+        ) {
+            const error = new Error('This student cannot be deleted')
+            error.statusCode = 403
+            throw error
+        } else {
+            let student = findProject.student._id
+
+            await StudentModel.findByIdAndDelete(student)
+
+            await ProjectModel.findByIdAndDelete(projectId)
+            io.getIO().emit('updatestudent', {
+                actions: 'update-all-student',
+            })
+
+            res.status(200).json('Student has been deleted')
         }
     } catch (error) {
         if (!error.statusCode) {

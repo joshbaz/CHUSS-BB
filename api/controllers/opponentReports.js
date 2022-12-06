@@ -6,6 +6,7 @@ const path = require('path')
 let mongo = require('mongodb')
 var Grid = require('gridfs-stream')
 const Moments = require('moment-timezone')
+const io = require('../../socket')
 
 require('dotenv').config()
 const mongoUri = process.env.MONGO_R_URL

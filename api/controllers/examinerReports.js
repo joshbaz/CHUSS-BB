@@ -281,7 +281,7 @@ exports.removeExaminerReportFile = async (req, res, next) => {
                actions: 'update-report',
                data: findReports._id.toString(),
            })
-            res.status(200).json(`File has been deleted`)
+            res.status(200).json(`Filev has been deleted`)
         }
     } catch (error) {
         if (!error.statusCode) {
