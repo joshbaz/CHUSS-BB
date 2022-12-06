@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 const SchoolModel = require('../models/schools')
-
+const io = require('../../socket')
 /** create school */
 exports.createSchool = async (req, res, next) => {
     try {
@@ -149,6 +149,29 @@ exports.getIndividualSchool = async (req, res, next) => {
 /** delete schools */
 exports.deleteSchool = async (req, res, next) => {
     try {
+        const schoolId = req.params.sid
+
+        const findSchool = await SchoolModel.findById(schoolId)
+
+        if (!findSchool) {
+            const error = new Error('School Not Found')
+            error.statusCode = 404
+            throw error
+        }
+
+        if (findSchool.departments.length > 0) {
+            const error = new Error('School has departments')
+            error.statusCode = 404
+            throw error
+        } else {
+            await SchoolModel.findByIdAndDelete(findSchool._id)
+            io.getIO().emit('deleteschool', {
+                actions: 'delete-school',
+                data: findSchool._id.toString(),
+            })
+
+            res.status(200).json(`School has been deleted`)
+        }
     } catch (error) {
         if (!error.statusCode) {
             error.statusCode = 500

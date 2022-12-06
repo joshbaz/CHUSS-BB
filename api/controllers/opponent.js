@@ -431,6 +431,7 @@ exports.deleteProjectAppLetter = async (req, res, next) => {
         }
 
         let ProjectExaminers = [...findProject.opponents]
+        let foundOpponent
 
         let newProjectExaminers = ProjectExaminers.map((data) => {
             if (
@@ -440,6 +441,7 @@ exports.deleteProjectAppLetter = async (req, res, next) => {
             ) {
                 return data
             } else {
+                foundOpponent = data.opponentId
                 return {
                     opponentId: data.opponentId,
                     preferredPayment: data.preferredPayment,
@@ -472,6 +474,10 @@ exports.deleteProjectAppLetter = async (req, res, next) => {
                     console.log('file chunks deletion registration')
 
                     await ProjectFileModel.findByIdAndDelete(projectAppLId)
+                    io.getIO().emit('updateop-project', {
+                        actions: 'update-app-letter',
+                        data: foundOpponent.toString(),
+                    })
                     console.log('registration finally deleted registration')
                     res.status(200).json(`Project App Letter has been deleted`)
                     //res.status(200).end()
@@ -480,6 +486,10 @@ exports.deleteProjectAppLetter = async (req, res, next) => {
             }
         } else {
             await ProjectFileModel.findByIdAndDelete(projectAppLId)
+            io.getIO().emit('updateop-project', {
+                actions: 'update-app-letter',
+                data: foundOpponent.toString(),
+            })
             console.log('not allowed file finally deleted registration')
             res.status(200).json(`File has been deleted`)
         }
@@ -551,9 +561,10 @@ exports.createProjectAppOpponentFile = async (req, res, next) => {
                     /** save the project */
                     findProject.opponents = newProjectExaminers
                     await findProject.save()
-                    io.getIO().emit('updateex-project', {
+
+                    io.getIO().emit('updateop-project', {
                         actions: 'update-app-letter',
-                        data: findProject._id.toString(),
+                        data: findExaminer._id.toString(),
                     })
                     res.status(201).json('Project Appointment Letter Added ')
                     return
@@ -594,7 +605,7 @@ exports.removeProjectOpponentsR = async (req, res, next) => {
         }
 
         const findReports = await OpponentReportModel.find({
-            examiner: examinerId,
+            opponent: examinerId,
             projectId: projectId,
             marked: false,
         })
@@ -731,6 +742,7 @@ exports.removeProjectOpponentsR = async (req, res, next) => {
                                 actions: 'update-student',
                                 data: findProject._id.toString(),
                             })
+
                             res.status(200).json(
                                 `opponent removed from project`
                             )

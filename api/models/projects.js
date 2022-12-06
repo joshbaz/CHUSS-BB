@@ -114,7 +114,7 @@ const projectSchema = mongoose.Schema(
                     type: mongoose.Schema.Types.ObjectId,
                     ref: 'projectFiles',
                 },
-                prefferedPayment: String,
+                preferredPayment: String,
             },
         ],
 
