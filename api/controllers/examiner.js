@@ -393,14 +393,34 @@ exports.assignExaminer = async (req, res, next) => {
 exports.getAllExaminers = async (req, res, next) => {
     try {
         let overall_total = await ExaminerModel.find().countDocuments()
-        const findExaminers = await ExaminerModel.find().populate(
-            'generalAppointmentLetters.fileId'
-        )
-        console.log(findExaminers, 'finnnnnn')
-        res.status(200).json({
-            items: findExaminers,
-            overall_total,
-        })
+        const findExaminers = await ExaminerModel.find()
+            .populate('generalAppointmentLetters.fileId')
+            .sort({ createdAt: -1 })
+        let newArray = [...findExaminers]
+
+        if (newArray.length > 0) {
+            for (let i = 0; i < newArray.length; i++) {
+                let iterations = i + 1
+                const findProjectCount = await ProjectModel.find({
+                    'examiners.examinerId': newArray[i]._id,
+                }).countDocuments()
+
+                newArray[i].studentsNo = findProjectCount
+                console.log('newArray', newArray)
+
+                if (iterations === findExaminers.length) {
+                    res.status(200).json({
+                        items: newArray,
+                        overall_total,
+                    })
+                }
+            }
+        } else {
+            res.status(200).json({
+                items: findExaminers,
+                overall_total,
+            })
+        }
     } catch (error) {
         if (!error.statusCode) {
             error.statusCode = 500
@@ -1020,26 +1040,59 @@ exports.createExaminer = async (req, res, next) => {
         const savedExaminer = await examiner.save()
 
         /** save the examiner general appointment File */
-        if (examinerAppLetter !== null) {
-            const file = new ProjectFileModel({
-                _id: mongoose.Types.ObjectId(),
-                fileName: examinerAppLetter.name,
-                fileExtension: examinerAppLetter.ext,
-                fileType: examinerAppLetter.fileType,
-                fileSize: examinerAppLetter.fileSize,
-                fileData: examinerAppLetter.buffer,
-                description: 'General Appointment Letter',
-            })
+        // if (examinerAppLetter !== null) {
+        //     const file = new ProjectFileModel({
+        //         _id: mongoose.Types.ObjectId(),
+        //         fileName: examinerAppLetter.name,
+        //         fileExtension: examinerAppLetter.ext,
+        //         fileType: examinerAppLetter.fileType,
+        //         fileSize: examinerAppLetter.fileSize,
+        //         fileData: examinerAppLetter.buffer,
+        //         description: 'General Appointment Letter',
+        //     })
 
-            let savedFile = await file.save()
+        //     let savedFile = await file.save()
 
-            savedExaminer.generalAppointmentLetters = [
-                ...savedExaminer.generalAppointmentLetters,
-                {
-                    fileId: savedFile._id,
-                },
-            ]
-            await savedExaminer.save()
+        //     savedExaminer.generalAppointmentLetters = [
+        //         ...savedExaminer.generalAppointmentLetters,
+        //         {
+        //             fileId: savedFile._id,
+        //         },
+        //     ]
+        //     await savedExaminer.save()
+        // } else {
+        // }
+
+        if (req.files) {
+            for (let iteration = 0; iteration < req.files.length; iteration++) {
+                if (
+                    req.files[iteration].metadata.name === 'examinerAppLetter'
+                ) {
+                    const filesExtenstions = path
+                        .extname(req.files[iteration].originalname)
+                        .slice(1)
+                    const saveFile = new ProjectFileModel({
+                        _id: mongoose.Types.ObjectId(),
+                        fileId: req.files[iteration].id,
+                        fileName: req.files[iteration].metadata.name,
+                        fileExtension: filesExtenstions,
+                        fileType: req.files[iteration].mimetype,
+                        fileSize: req.files[iteration].size,
+                        description: 'examinerAppLetter',
+                    })
+
+                    let savedFiles = await saveFile.save()
+
+                    savedExaminer.generalAppointmentLetters = [
+                        ...savedExaminer.generalAppointmentLetters,
+                        {
+                            fileId: savedFiles._id,
+                        },
+                    ]
+
+                    await savedExaminer.save()
+                }
+            }
         } else {
         }
 
@@ -1244,30 +1297,253 @@ exports.updateExaminer = async (req, res, next) => {
         await getExaminer.save()
 
         /** save the examiner general appointment File */
-        if (examinerAppLetter !== null) {
-            const file = new ProjectFileModel({
-                _id: mongoose.Types.ObjectId(),
-                fileName: examinerAppLetter.name,
-                fileExtension: examinerAppLetter.ext,
-                fileType: examinerAppLetter.fileType,
-                fileSize: examinerAppLetter.fileSize,
-                fileData: examinerAppLetter.buffer,
-                description: 'General Appointment Letter',
-            })
+        // if (examinerAppLetter !== null) {
+        //     const file = new ProjectFileModel({
+        //         _id: mongoose.Types.ObjectId(),
+        //         fileName: examinerAppLetter.name,
+        //         fileExtension: examinerAppLetter.ext,
+        //         fileType: examinerAppLetter.fileType,
+        //         fileSize: examinerAppLetter.fileSize,
+        //         fileData: examinerAppLetter.buffer,
+        //         description: 'General Appointment Letter',
+        //     })
 
-            let savedFile = await file.save()
+        //     let savedFile = await file.save()
 
-            getExaminer.generalAppointmentLetters = [
-                ...getExaminer.generalAppointmentLetters,
-                {
-                    fileId: savedFile._id,
-                },
-            ]
-            await getExaminer.save()
+        //     getExaminer.generalAppointmentLetters = [
+        //         ...getExaminer.generalAppointmentLetters,
+        //         {
+        //             fileId: savedFile._id,
+        //         },
+        //     ]
+        //     await getExaminer.save()
+        // } else {
+        // }
+
+        if (req.files) {
+            for (let iteration = 0; iteration < req.files.length; iteration++) {
+                if (
+                    req.files[iteration].metadata.name === 'examinerAppLetter'
+                ) {
+                    const filesExtenstions = path
+                        .extname(req.files[iteration].originalname)
+                        .slice(1)
+                    const saveFile = new ProjectFileModel({
+                        _id: mongoose.Types.ObjectId(),
+                        fileId: req.files[iteration].id,
+                        fileName: req.files[iteration].metadata.name,
+                        fileExtension: filesExtenstions,
+                        fileType: req.files[iteration].mimetype,
+                        fileSize: req.files[iteration].size,
+                        description: 'examinerAppLetter',
+                    })
+
+                    let savedFiles = await saveFile.save()
+
+                    getExaminer.generalAppointmentLetters = [
+                        ...getExaminer.generalAppointmentLetters,
+                        {
+                            fileId: savedFiles._id,
+                        },
+                    ]
+
+                    await getExaminer.save()
+                }
+            }
         } else {
         }
 
         res.status(201).json('Examiner has been successfully updated')
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500
+        }
+        next(error)
+    }
+}
+
+/** delete examiners */
+exports.deleteExaminer = async (req, res, next) => {
+    try {
+        const exId = req.params.eid
+
+        const findExaminer = await ExaminerModel.findById(exId)
+            .populate('generalAppointmentLetters.fileId')
+            .sort({ createdAt: -1 })
+        if (!findExaminer) {
+            const error = new Error('Examiner Not Found')
+            error.statusCode = 404
+            throw error
+        }
+        console.log('working on it')
+
+        /** check if examiner has students */
+        const findProjectCount = await ProjectModel.find({
+            'examiners.examinerId': findExaminer._id,
+        }).countDocuments()
+
+        if (findProjectCount > 0) {
+            const error = new Error('Examiner has students assigned')
+            error.statusCode = 403
+            throw error
+        } else {
+            if (findExaminer.generalAppointmentLetters.length > 0) {
+                let newDataArray = [...findExaminer.generalAppointmentLetters]
+
+                for (
+                    let iteration = 0;
+                    iteration < newDataArray.length;
+                    iteration++
+                ) {
+                    let ttIterations = iteration + 1
+                    /** find the file */
+                    const findFileDetail = await ProjectFileModel.findById(
+                        newDataArray[iteration].fileId._id
+                    )
+
+                    /** delete the project file found */
+                    if (findFileDetail.fileId) {
+                        const initFileId = findFileDetail.fileId
+
+                        if (!initFileId || initFileId === 'undefined') {
+                            return res.status(400).send('no document found')
+                        } else {
+                            const newFileId = new mongoose.Types.ObjectId(
+                                initFileId
+                            )
+                            console.log('newFileId', newFileId)
+
+                            const file = await gfs.files.findOne({
+                                _id: newFileId,
+                            })
+                            const gsfb = new mongoose.mongo.GridFSBucket(
+                                conn.db,
+                                {
+                                    bucketName: 'chussfiles',
+                                }
+                            )
+
+                            gsfb.delete(file._id, async (err, gridStore) => {
+                                if (err) {
+                                    return next(err)
+                                }
+
+                                await ProjectFileModel.findByIdAndDelete(
+                                    findFileDetail._id
+                                )
+                            })
+                        }
+                    } else {
+                        await ProjectFileModel.findByIdAndDelete(
+                            findFileDetail._id
+                        )
+                    }
+
+                    if (ttIterations === newDataArray.length) {
+                        await ExaminerModel.findByIdAndDelete(exId)
+                        io.getIO().emit('deleteexaminers', {
+                            actions: 'delete-examiner',
+                            data: findExaminer._id.toString(),
+                        })
+                        res.status(200).json(`Examiner has been deleted`)
+                    }
+                }
+            } else {
+                await ExaminerModel.findByIdAndDelete(exId)
+                io.getIO().emit('deleteexaminers', {
+                    actions: 'delete-examiner',
+                    data: findExaminer._id.toString(),
+                })
+                res.status(200).json(`Examiner has been deleted`)
+            }
+        }
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500
+        }
+        next(error)
+    }
+}
+
+/** delete file */
+exports.deleteExFiles = async (req, res, next) => {
+    try {
+        const exId = req.params.eid
+        const fileId = req.params.fid
+
+        const findExaminer = await ExaminerModel.findById(exId)
+            .populate('generalAppointmentLetters.fileId')
+            .sort({ createdAt: -1 })
+        if (!findExaminer) {
+            const error = new Error('Examiner Not Found')
+            error.statusCode = 404
+            throw error
+        }
+
+        const findFileDetail = await ProjectFileModel.findById(fileId)
+        if (!findFileDetail) {
+            const error = new Error('File not found!')
+            error.statusCode = 404
+            throw error
+        }
+
+        if (findExaminer.generalAppointmentLetters.length > 0) {
+            let newDataArray = [...findExaminer.generalAppointmentLetters]
+
+            let newExaminerFiles = newDataArray.filter((data) => {
+                if (
+                    findFileDetail._id.toString() !== data.fileId._id.toString()
+                ) {
+                    return data
+                } else {
+                    return
+                }
+            })
+            findExaminer.generalAppointmentLetters = newExaminerFiles
+            await findExaminer.save()
+
+            if (findFileDetail.fileId) {
+                const initFileId = findFileDetail.fileId
+                console.log('initFileId', initFileId)
+                if (!initFileId || initFileId === 'undefined') {
+                    return res.status(400).send('no document found')
+                } else {
+                    const newFileId = new mongoose.Types.ObjectId(initFileId)
+                    console.log('newFileId', newFileId)
+
+                    const file = await gfs.files.findOne({ _id: newFileId })
+                    const gsfb = new mongoose.mongo.GridFSBucket(conn.db, {
+                        bucketName: 'chussfiles',
+                    })
+
+                    gsfb.delete(file._id, async (err, gridStore) => {
+                        if (err) {
+                            return next(err)
+                        }
+
+                        console.log('file chunks deletion registration')
+
+                        await ProjectFileModel.findByIdAndDelete(
+                            findFileDetail._id
+                        )
+
+                        res.status(200).json(
+                            `Examiner App Letter has been deleted`
+                        )
+                        //res.status(200).end()
+                        return
+                    })
+                }
+            } else {
+                await ProjectFileModel.findByIdAndDelete(findFileDetail._id)
+
+                res.status(200).json(`File has been deleted`)
+            }
+        } else {
+            const error = new Error('No Files to remove!')
+            error.statusCode = 404
+            throw error
+        }
     } catch (error) {
         if (!error.statusCode) {
             error.statusCode = 500

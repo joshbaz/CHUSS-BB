@@ -103,11 +103,7 @@ router.get('/v1/getall', examinerController.getAllExaminers)
 router.get('/v1/individual/:id', examinerController.getIndividualExaminer)
 
 /** create examiners */
-router.post(
-    '/v1/create',
-
-    examinerController.createExaminer
-)
+router.post('/v1/create', uploadMiddleware, examinerController.createExaminer)
 
 /** get paginated examiners */
 router.get('/v1/pexaminers', examinerController.getPaginatedExaminers)
@@ -116,7 +112,11 @@ router.get('/v1/pexaminers', examinerController.getPaginatedExaminers)
 router.get('/v1/students/:e_id', examinerController.getStudentsByExaminer)
 
 /** update examiners */
-router.patch('/v1/update/:id', examinerController.updateExaminer)
+router.patch(
+    '/v1/update/:id',
+    uploadMiddleware,
+    examinerController.updateExaminer
+)
 
 /** delete project App letter */
 router.patch(
@@ -134,6 +134,10 @@ router.patch(
     '/v1/projectexaminers/remove/:pid/:eid/:secid',
     examinerController.removeProjectExaminersR
 )
+
+router.delete('/v1/examiners/remove/:eid', examinerController.deleteExaminer)
+
+router.delete('/v1/examiners/files/removes/:eid/:fid', examinerController.deleteExFiles)
 
 // router.post('/v1/trial', upload.single('myfiles'), (req, res) => {
 //     res.json({ file: req.file, text: req.body.type })
