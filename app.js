@@ -95,17 +95,17 @@ mongoose
 
         if (server) {
             console.log('successfully running on port:', port)
-            // console.log('connected to database:', result.connections[0].name)
-            // const io = require('./socket').init(server, {
-            //     origins: ['*'],
-            // })
+            console.log('connected to database:', result.connections[0].name)
+            const io = require('./socket').init(server, {
+                origins: ['*'],
+            })
 
-              const io = require('./socket').init(server, {
-                  allowRequest: (req, callback) => {
-                      const noOriginHeader = req.headers.origin === undefined
-                      callback(null, noOriginHeader)
-                  },
-              })
+            //   const io = require('./socket').init(server, {
+            //       allowRequest: (req, callback) => {
+            //           const noOriginHeader = req.headers.origin === undefined
+            //           callback(null, noOriginHeader)
+            //       },
+            //   })
 
             io.on('connection', (socket) => {
                 console.log('client connected')
