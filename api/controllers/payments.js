@@ -33,7 +33,7 @@ exports.getIndividualPayment = async (req, res, next) => {
     try {
         const payId = req.params.payId
         const getPayment = await PayModel.findById(payId).populate(
-            'examiner project report student'
+            'examiner project report student opponent'
         )
         if (!getPayment) {
             const error = new Error('Payment not found')
@@ -54,7 +54,7 @@ exports.getIndividualPayment = async (req, res, next) => {
 exports.getAllPayments = async (req, res, next) => {
     try {
         const getPayments = await PayModel.find().populate(
-            'examiner project report student'
+            'examiner project report student opponent'
         )
 
         res.status(200).json({ items: getPayments })
@@ -88,7 +88,7 @@ exports.getPaginatedPayments = async (req, res, next) => {
             .sort({ createdAt: -1 })
             .skip((currentPage - 1) * perPages)
             .limit(perPages)
-            .populate('examiner project report student')
+            .populate('examiner project report student opponent')
 
         let current_total = await PayModel.find()
             .sort({ createdAt: -1 })

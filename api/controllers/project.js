@@ -111,7 +111,7 @@ exports.createProject = async (req, res, next) => {
                     completed: false,
                 },
                 {
-                    status: 'Marking in Progress',
+                    status: 'Marking In Progress',
                     notes: '',
                     completed: false,
                 },
@@ -127,6 +127,11 @@ exports.createProject = async (req, res, next) => {
                 },
                 {
                     status: 'Final Submission',
+                    notes: '',
+                    completed: false,
+                },
+                {
+                    status: 'Waiting For Graduation',
                     notes: '',
                     completed: false,
                 },
