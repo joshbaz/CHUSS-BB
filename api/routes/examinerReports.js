@@ -35,13 +35,13 @@ const storage = new GridFsStorage({
         return new Promise((resolve, reject) => {
             crypto.randomBytes(16, (err, buf) => {
                 if (err) {
-                    console.log('errors', err)
+                   // console.log('errors', err)
                     return reject(err)
                 }
                 const filename =
                     buf.toString('hex') + path.extname(file.originalname)
                 const filesExtenstions = path.extname(file.originalname)
-                console.log('extensiond', path.extname(file.originalname))
+              //  console.log('extensiond', path.extname(file.originalname))
                 const extractNameOnly = path.basename(
                     file.originalname,
                     filesExtenstions
@@ -69,9 +69,9 @@ const store = multer({
 
 const uploadMiddleware = (req, res, next) => {
     const upload = store.single('reportssFiles')
-    console.log('upload', upload)
+  //  console.log('upload', upload)
     upload(req, res, function (err) {
-        console.log('we are here')
+    //    console.log('we are here')
         if (err instanceof multer.MulterError) {
             return res.status(400).send('File too large')
         } else if (err) {

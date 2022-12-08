@@ -130,7 +130,7 @@ exports.assignMember = async (req, res, next) => {
 exports.getAllMembers = async (req, res, next) => {
     try {
         const findExaminers = await DoctoralMModel.find()
-        console.log(findExaminers, 'finnnnnn')
+       // console.log(findExaminers, 'finnnnnn')
         res.status(200).json({
             items: findExaminers,
         })
@@ -156,7 +156,7 @@ exports.getPaginatedMembers = async (req, res, next) => {
         }
 
         let perPages = perPage || 8
-        console.log('perPages', perPages)
+       // console.log('perPages', perPages)
         let overall_total = await DoctoralMModel.find().countDocuments()
 
         let getExaminers = await DoctoralMModel.find()
@@ -196,7 +196,7 @@ exports.getIndividualMembers = async (req, res, next) => {
     try {
         const id = req.params.id
         let getExaminer = await DoctoralMModel.findById(id)
-        console.log('examiner', getExaminer)
+       // console.log('examiner', getExaminer)
 
         if (!getExaminer) {
             const error = new Error('committee member not found')
@@ -267,7 +267,7 @@ exports.updateCMember = async (req, res, next) => {
         let examinerId = req.params.id
 
         const getExaminer = await DoctoralMModel.findById(examinerId)
-        console.log('exam', getExaminer)
+       // console.log('exam', getExaminer)
         if (!getExaminer) {
             const error = new Error('Committee Member not found')
             error.statusCode = 404
@@ -284,7 +284,7 @@ exports.updateCMember = async (req, res, next) => {
         getExaminer.countryOfResidence = countryOfResidence
         getExaminer.placeOfWork = placeOfWork
 
-        console.log('made jump it')
+      //  console.log('made jump it')
         await getExaminer.save()
 
         res.status(201).json('Committee Member has been successfully updated')
@@ -326,7 +326,7 @@ exports.removeProjectDCMember = async (req, res, next) => {
             ) {
                 return data
             } else {
-                console.log('nfound one')
+              //  console.log('nfound one')
                 return
             }
         })

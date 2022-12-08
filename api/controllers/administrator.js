@@ -24,7 +24,6 @@ exports.createAdmin = async (req, res, next) => {
         const errors = validationResult(req)
 
         if (!errors.isEmpty()) {
-            console.log(errors.errors[0].msg)
             const error = new Error('Validation failed')
             error.statusCode = 422
             error.message = errors.errors[0].msg
@@ -66,7 +65,7 @@ exports.createAdmin = async (req, res, next) => {
 exports.loginUser = async (req, res, next) => {
     try {
         const { email, password } = req.body
-        console.log('email', email)
+       
         //find user
         const findOneUser = await AdminModel.findOne({ email: email })
 

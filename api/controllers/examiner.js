@@ -406,7 +406,7 @@ exports.getAllExaminers = async (req, res, next) => {
                 }).countDocuments()
 
                 newArray[i].studentsNo = findProjectCount
-                console.log('newArray', newArray)
+              //  console.log('newArray', newArray)
 
                 if (iterations === findExaminers.length) {
                     res.status(200).json({
@@ -443,7 +443,7 @@ exports.getPaginatedExaminers = async (req, res, next) => {
         }
 
         let perPages = perPage || 8
-        console.log('perPages', perPages)
+     //   console.log('perPages', perPages)
         let overall_total = await ExaminerModel.find().countDocuments()
 
         let getExaminers = await ExaminerModel.find()
@@ -467,7 +467,7 @@ exports.getPaginatedExaminers = async (req, res, next) => {
             }).countDocuments()
 
             newArray[i].studentsNo = findProjectCount
-            console.log('newArray', newArray)
+        //    console.log('newArray', newArray)
 
             if (iterations === getExaminers.length) {
                 res.status(200).json({
@@ -513,7 +513,7 @@ exports.getIndividualExaminer = async (req, res, next) => {
         let getExaminer = await ExaminerModel.findById(id).populate(
             'generalAppointmentLetters.fileId'
         )
-        console.log('examiner', getExaminer)
+    //    console.log('examiner', getExaminer)
 
         if (!getExaminer) {
             const error = new Error('Examiner not found')
@@ -550,7 +550,7 @@ exports.getStudentsByExaminer = async (req, res, next) => {
         }
 
         let perPages = perPage || 8
-        console.log('perPages', perPages)
+    //    console.log('perPages', perPages)
 
         const overall_total = await ProjectModel.find({
             'examiners.examinerId': examinerId,
@@ -631,12 +631,12 @@ exports.deleteProjectAppLetter = async (req, res, next) => {
 
         if (findFileDetail.fileId) {
             const initFileId = findFileDetail.fileId
-            console.log('initFileId', initFileId)
+          //  console.log('initFileId', initFileId)
             if (!initFileId || initFileId === 'undefined') {
                 return res.status(400).send('no document found')
             } else {
                 const newFileId = new mongoose.Types.ObjectId(initFileId)
-                console.log('newFileId', newFileId)
+             //   console.log('newFileId', newFileId)
 
                 const file = await gfs.files.findOne({ _id: newFileId })
                 const gsfb = new mongoose.mongo.GridFSBucket(conn.db, {
@@ -648,10 +648,10 @@ exports.deleteProjectAppLetter = async (req, res, next) => {
                         return next(err)
                     }
 
-                    console.log('file chunks deletion registration')
+                  //  console.log('file chunks deletion registration')
 
                     await ProjectFileModel.findByIdAndDelete(projectAppLId)
-                    console.log('registration finally deleted registration')
+                //    console.log('registration finally deleted registration')
                     res.status(200).json(`Project App Letter has been deleted`)
                     //res.status(200).end()
                     return
@@ -659,7 +659,7 @@ exports.deleteProjectAppLetter = async (req, res, next) => {
             }
         } else {
             await ProjectFileModel.findByIdAndDelete(projectAppLId)
-            console.log('not allowed file finally deleted registration')
+         //   console.log('not allowed file finally deleted registration')
             res.status(200).json(`File has been deleted`)
         }
     } catch (error) {
@@ -786,7 +786,7 @@ exports.removeProjectExaminersR = async (req, res, next) => {
         if (findReports.length < 1) {
             res.status(200).json('You cannot delete a Marked Report!')
         } else {
-            console.log('trying to get how many returned', findReports)
+         //   console.log('trying to get how many returned', findReports)
 
             /** query whether the secid type is resubmission /normal */
             let allProjectExaminers = [...findProject.examiners]
@@ -799,7 +799,7 @@ exports.removeProjectExaminersR = async (req, res, next) => {
             if (secDetails) {
                 /** query out reports */
                 let allProjectExamReports = [...findProject.examinerReports]
-                console.log('allProjectExamReports', allProjectExamReports)
+              //  console.log('allProjectExamReports', allProjectExamReports)
                 let foundReports = allProjectExamReports.find(
                     (element) =>
                         element.submissionType === secDetails.submissionType &&
@@ -810,7 +810,7 @@ exports.removeProjectExaminersR = async (req, res, next) => {
 
                 if (foundReports) {
                     /** remove the report from project */
-                    console.log('saved new ', foundReports)
+                   // console.log('saved new ', foundReports)
                     let newAllReports = allProjectExamReports.filter((data) => {
                         if (
                             foundReports._id.toString() !== data._id.toString()
@@ -823,7 +823,7 @@ exports.removeProjectExaminersR = async (req, res, next) => {
 
                     findProject.examinerReports = newAllReports
                     await findProject.save()
-                    console.log('saved new ')
+                //    console.log('saved new ')
                     /** Delete the report from reports */
                     await ExaminerReportModel.findByIdAndDelete(
                         foundReports.reportId._id
@@ -855,14 +855,14 @@ exports.removeProjectExaminersR = async (req, res, next) => {
                         /** delete the project file found */
                         if (findFileDetail.fileId) {
                             const initFileId = findFileDetail.fileId
-                            console.log('initFileId', initFileId)
+                           // console.log('initFileId', initFileId)
                             if (!initFileId || initFileId === 'undefined') {
                                 return res.status(400).send('no document found')
                             } else {
                                 const newFileId = new mongoose.Types.ObjectId(
                                     initFileId
                                 )
-                                console.log('newFileId', newFileId)
+                              //  console.log('newFileId', newFileId)
 
                                 const file = await gfs.files.findOne({
                                     _id: newFileId,
@@ -881,16 +881,16 @@ exports.removeProjectExaminersR = async (req, res, next) => {
                                             return next(err)
                                         }
 
-                                        console.log(
-                                            'file chunks deletion registration'
-                                        )
+                                        // console.log(
+                                        //     'file chunks deletion registration'
+                                        // )
 
                                         await ProjectFileModel.findByIdAndDelete(
                                             findFileDetail._id
                                         )
-                                        console.log(
-                                            'registration finally deleted registration'
-                                        )
+                                        // console.log(
+                                        //     'registration finally deleted registration'
+                                        // )
 
                                         io.getIO().emit('updatestudent', {
                                             actions: 'update-student',
@@ -908,9 +908,9 @@ exports.removeProjectExaminersR = async (req, res, next) => {
                             await ProjectFileModel.findByIdAndDelete(
                                 findFileDetail._id
                             )
-                            console.log(
-                                'not allowed file finally deleted registration'
-                            )
+                            // console.log(
+                            //     'not allowed file finally deleted registration'
+                            // )
                             io.getIO().emit('updatestudent', {
                                 actions: 'update-student',
                                 data: findProject._id.toString(),
@@ -1136,7 +1136,7 @@ exports.updateExaminer = async (req, res, next) => {
         let examinerId = req.params.id
 
         const getExaminer = await ExaminerModel.findById(examinerId)
-        console.log('exam', getExaminer)
+      //  console.log('exam', getExaminer)
         if (!getExaminer) {
             const error = new Error('Examiner not found')
             error.statusCode = 404
@@ -1145,23 +1145,23 @@ exports.updateExaminer = async (req, res, next) => {
 
         /** destructure the payment Info of external */
         let paymentInfo = [...getExaminer.paymentInfo]
-        console.log('paymentInfo', paymentInfo)
+     //   console.log('paymentInfo', paymentInfo)
         if (typeOfExaminer === 'External') {
             if (getExaminer.paymentInfo.length > 0) {
                 if (preferredPayment === 'mobileMoney') {
-                    console.log('reached here')
+                   // console.log('reached here')
                     for (
                         let iteration = 0;
                         iteration < paymentInfo.length;
                         iteration++
                     ) {
                         let totalIteration = iteration + 1
-                        console.log('made it', totalIteration)
+                     //   console.log('made it', totalIteration)
                         if (
                             preferredPayment ===
                             paymentInfo[iteration].preferredPayment
                         ) {
-                            console.log('made it')
+                          //  console.log('made it')
                             paymentInfo[iteration].mobileOperator =
                                 mobileOperator
                             paymentInfo[iteration].mobileSubscriberName =
@@ -1293,7 +1293,7 @@ exports.updateExaminer = async (req, res, next) => {
         getExaminer.otherTitles = otherTitles
         getExaminer.typeOfExaminer = typeOfExaminer
         getExaminer.preferredPayment = preferredPayment
-        console.log('made jump it')
+      //  console.log('made jump it')
         await getExaminer.save()
 
         /** save the examiner general appointment File */
@@ -1375,7 +1375,7 @@ exports.deleteExaminer = async (req, res, next) => {
             error.statusCode = 404
             throw error
         }
-        console.log('working on it')
+       // console.log('working on it')
 
         /** check if examiner has students */
         const findProjectCount = await ProjectModel.find({
@@ -1411,7 +1411,7 @@ exports.deleteExaminer = async (req, res, next) => {
                             const newFileId = new mongoose.Types.ObjectId(
                                 initFileId
                             )
-                            console.log('newFileId', newFileId)
+                         //   console.log('newFileId', newFileId)
 
                             const file = await gfs.files.findOne({
                                 _id: newFileId,
@@ -1504,12 +1504,12 @@ exports.deleteExFiles = async (req, res, next) => {
 
             if (findFileDetail.fileId) {
                 const initFileId = findFileDetail.fileId
-                console.log('initFileId', initFileId)
+            //    console.log('initFileId', initFileId)
                 if (!initFileId || initFileId === 'undefined') {
                     return res.status(400).send('no document found')
                 } else {
                     const newFileId = new mongoose.Types.ObjectId(initFileId)
-                    console.log('newFileId', newFileId)
+                   // console.log('newFileId', newFileId)
 
                     const file = await gfs.files.findOne({ _id: newFileId })
                     const gsfb = new mongoose.mongo.GridFSBucket(conn.db, {
@@ -1521,7 +1521,7 @@ exports.deleteExFiles = async (req, res, next) => {
                             return next(err)
                         }
 
-                        console.log('file chunks deletion registration')
+                     //   console.log('file chunks deletion registration')
 
                         await ProjectFileModel.findByIdAndDelete(
                             findFileDetail._id

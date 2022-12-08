@@ -68,7 +68,7 @@ const uploadMiddleware = (req, res, next) => {
     const upload = store.single('reportssFiles')
 
     upload(req, res, function (err) {
-        console.log('we are here')
+       // console.log('we are here')
         if (err instanceof multer.MulterError) {
             return res.status(400).send('File too large')
         } else if (err) {

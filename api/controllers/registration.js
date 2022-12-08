@@ -79,7 +79,7 @@ exports.addRegistration = async (req, res, next) => {
             throw error
         }
 
-        console.log(findProject, 'regs')
+      //  console.log(findProject, 'regs')
 
         const registration = new RegistrationModel({
             _id: new mongoose.Types.ObjectId(),
@@ -123,7 +123,7 @@ exports.addRegistration = async (req, res, next) => {
 
             res.status(200).json('registration created successfully')
         } else {
-            console.log('we have no files')
+          //  console.log('we have no files')
             let savePRegister = {
                 registrationId: saveRegistration._id,
             }
@@ -163,7 +163,7 @@ exports.removeRegistration = async (req, res, next) => {
             throw error
         }
 
-        console.log('found project')
+      //  console.log('found project')
 
         const findRegistration = await RegistrationModel.findById(
             registrationId
@@ -174,7 +174,7 @@ exports.removeRegistration = async (req, res, next) => {
             throw error
         }
 
-        console.log('found registration')
+       
 
         let ProjectRegistration = [...findProject.registration]
 
@@ -185,30 +185,27 @@ exports.removeRegistration = async (req, res, next) => {
             ) {
                 return data
             } else {
-                console.log('nfound one')
+               
                 return
             }
         })
 
-        console.log('removed registration')
+        
 
         findProject.registration = newProjectRegistration
 
         await findProject.save()
 
-        console.log(
-            'filedId registration',
-            findRegistration.registrationfile.fileId
-        )
+      
 
         if (findRegistration.registrationfile.fileId) {
             const initFileId = findRegistration.registrationfile.fileId
-            console.log('initFileId', initFileId)
+          
             if (!initFileId || initFileId === 'undefined') {
                 return res.status(400).send('no document found')
             } else {
                 const newFileId = new mongoose.Types.ObjectId(initFileId)
-                console.log('newFileId', newFileId)
+               
 
                 const file = await gfs.files.findOne({ _id: newFileId })
                 const gsfb = new mongoose.mongo.GridFSBucket(conn.db, {
@@ -220,10 +217,10 @@ exports.removeRegistration = async (req, res, next) => {
                         return next(err)
                     }
 
-                    console.log('file chunks deletion registration')
+                   
 
                     await RegistrationModel.findByIdAndDelete(registrationId)
-                    console.log('registration finally deleted registration')
+                
                     io.getIO().emit('updatestudent', {
                         actions: 'update-student',
                         data: findProject._id.toString(),
@@ -253,7 +250,7 @@ exports.removeRegistration = async (req, res, next) => {
             }
         } else {
             await RegistrationModel.findByIdAndDelete(registrationId)
-            console.log('not allowed registration finally deleted registration')
+           
             io.getIO().emit('updatestudent', {
                 actions: 'update-student',
                 data: findProject._id.toString(),

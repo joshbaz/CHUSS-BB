@@ -31,7 +31,7 @@ conn.once('open', () => {
 exports.updateExaminerReport = async (req, res, next) => {
     try {
         const reportId = req.params.rid
-        console.log(req.file, 'req.files', 'trying it')
+      //  console.log(req.file, 'req.files', 'trying it')
 
         const { score, remarks, ungraded } = req.body
 
@@ -249,10 +249,10 @@ exports.removeExaminerReportFile = async (req, res, next) => {
                         return next(err)
                     }
 
-                    console.log('file chunks deletion registration')
+                  //  console.log('file chunks deletion registration')
 
                     await ReportFileModel.findByIdAndDelete(findMainFile._id)
-                    console.log('registration finally deleted registration')
+                //    console.log('registration finally deleted registration')
 
                     io.getIO().emit('updatestudent', {
                         actions: 'update-student',
@@ -270,7 +270,7 @@ exports.removeExaminerReportFile = async (req, res, next) => {
             }
         } else {
             await ReportFileModel.findByIdAndDelete(findMainFile._id)
-            console.log('not allowed registration finally deleted registration')
+          //  console.log('not allowed registration finally deleted registration')
 
            io.getIO().emit('updatestudent', {
                actions: 'update-student',

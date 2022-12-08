@@ -93,7 +93,7 @@ exports.getPaginatedSchools = async (req, res, next) => {
         }
 
         let perPages = perPage || 8
-        console.log('perPages', perPages)
+      
         let overall_total = await SchoolModel.find().countDocuments()
 
         let getSchools = await SchoolModel.find()

@@ -75,9 +75,9 @@ const store = multer({
 
 const uploadMiddleware = (req, res, next) => {
     const upload = store.array('projectFiles')
-    console.log('upload', upload)
+   // console.log('upload', upload)
     upload(req, res, function (err) {
-        console.log('we are here')
+      //  console.log('we are here')
         if (err instanceof multer.MulterError) {
             return res.status(400).send('File too large')
         } else if (err) {
