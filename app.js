@@ -20,16 +20,16 @@ const opponentRoutes = require('./api/routes/opponent')
 const opponentReportRoutes = require('./api/routes/opponentReports')
 const supervisorRoutes = require('./api/routes/supervisors')
 const doctoralMemberRoutes = require('./api/routes/doctoralmembers')
-const schoolRoutes = require('./api/routes/schools')
+const schoolRoutes = require('./api/routes/schools');
 const departmentRoutes = require('./api/routes/schoolDepartments')
-const registrationRoutes = require('./api/routes/registration')
+const registrationRoutes = require('./api/routes/registration');
 //apply middleware
 app.use(cors())
 app.use(bodyparser.json())
 app.use(bodyparser.urlencoded({ extended: true }))
 
 app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', 'https://chuss.tk')
+    res.setHeader('Access-Control-Allow-Origin', '*')
     res.setHeader(
         'Access-Control-Allow-Headers',
         'Origin, A-Requested-Width, Content-Type, Accept, Authorization'
@@ -44,7 +44,7 @@ app.use((req, res, next) => {
             'DELETE',
             'GET'
         )
-        return res
+        return res.status(200).json({})
     }
     next()
 })
@@ -96,9 +96,16 @@ mongoose
         if (server) {
             console.log('successfully running on port:', port)
             // console.log('connected to database:', result.connections[0].name)
-            const io = require('./socket').init(server, {
-                origins: ['https://chuss.tk'],
-            })
+            // const io = require('./socket').init(server, {
+            //     origins: ['*'],
+            // })
+
+              const io = require('./socket').init(server, {
+                  allowRequest: (req, callback) => {
+                      const noOriginHeader = req.headers.origin === undefined
+                      callback(null, noOriginHeader)
+                  },
+              })
 
             io.on('connection', (socket) => {
                 console.log('client connected')
