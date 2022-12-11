@@ -8,6 +8,7 @@ const path = require('path')
 const crypto = require('crypto')
 const mongoose = require('mongoose')
 
+const isAuth = require('../middleware/is-auth')
 require('dotenv').config()
 const mongoUri = process.env.MONGO_R_URL
 
@@ -75,9 +76,9 @@ const store = multer({
 
 const uploadMiddleware = (req, res, next) => {
     const upload = store.array('projectFiles')
-   // console.log('upload', upload)
+    // console.log('upload', upload)
     upload(req, res, function (err) {
-      //  console.log('we are here')
+        //  console.log('we are here')
         if (err instanceof multer.MulterError) {
             return res.status(400).send('File too large')
         } else if (err) {
@@ -90,30 +91,49 @@ const uploadMiddleware = (req, res, next) => {
 }
 router.post(
     '/v1/project/create/:pid',
+    isAuth,
     uploadMiddleware,
     examinerController.createProjectExaminer
 )
 
-router.post('/v1/project/assign/:pid', examinerController.assignExaminer)
+router.post(
+    '/v1/project/assign/:pid',
+    isAuth,
+    examinerController.assignExaminer
+)
 
 /** get all examiners */
-router.get('/v1/getall', examinerController.getAllExaminers)
+router.get('/v1/getall', isAuth, examinerController.getAllExaminers)
 
 /** get individual examiners */
-router.get('/v1/individual/:id', examinerController.getIndividualExaminer)
+router.get(
+    '/v1/individual/:id',
+    isAuth,
+    examinerController.getIndividualExaminer
+)
 
 /** create examiners */
-router.post('/v1/create', uploadMiddleware, examinerController.createExaminer)
+router.post(
+    '/v1/create',
+    isAuth,
+    uploadMiddleware,
+    examinerController.createExaminer
+)
 
 /** get paginated examiners */
-router.get('/v1/pexaminers', examinerController.getPaginatedExaminers)
+router.get('/v1/pexaminers', isAuth, examinerController.getPaginatedExaminers)
 
 /** get students by examiners */
-router.get('/v1/students/:e_id', examinerController.getStudentsByExaminer)
+router.get(
+    '/v1/students/:e_id',
+    isAuth,
+    examinerController.getStudentsByExaminer
+)
 
 /** update examiners */
 router.patch(
     '/v1/update/:id',
+    isAuth,
     uploadMiddleware,
     examinerController.updateExaminer
 )
@@ -121,23 +141,34 @@ router.patch(
 /** delete project App letter */
 router.patch(
     '/v1/letter/projectexaminer/delete/:pid/:fid',
+    isAuth,
     examinerController.deleteProjectAppLetter
 )
 
 router.patch(
     '/v1/letter/projectexaminer/add/:pid/:eid',
+    isAuth,
     uploadMiddleware,
     examinerController.createProjectAppExaminerFile
 )
 
 router.patch(
     '/v1/projectexaminers/remove/:pid/:eid/:secid',
+    isAuth,
     examinerController.removeProjectExaminersR
 )
 
-router.delete('/v1/examiners/remove/:eid', examinerController.deleteExaminer)
+router.delete(
+    '/v1/examiners/remove/:eid',
+    isAuth,
+    examinerController.deleteExaminer
+)
 
-router.delete('/v1/examiners/files/removes/:eid/:fid', examinerController.deleteExFiles)
+router.delete(
+    '/v1/examiners/files/removes/:eid/:fid',
+    isAuth,
+    examinerController.deleteExFiles
+)
 
 // router.post('/v1/trial', upload.single('myfiles'), (req, res) => {
 //     res.json({ file: req.file, text: req.body.type })

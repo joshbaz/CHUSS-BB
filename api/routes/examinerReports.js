@@ -6,6 +6,8 @@ const multer = require('multer')
 const { GridFsStorage } = require('multer-gridfs-storage')
 const Grid = require('gridfs-stream')
 
+const isAuth = require('../middleware/is-auth')
+
 const path = require('path')
 const crypto = require('crypto')
 const mongoose = require('mongoose')
@@ -35,13 +37,13 @@ const storage = new GridFsStorage({
         return new Promise((resolve, reject) => {
             crypto.randomBytes(16, (err, buf) => {
                 if (err) {
-                   // console.log('errors', err)
+                    // console.log('errors', err)
                     return reject(err)
                 }
                 const filename =
                     buf.toString('hex') + path.extname(file.originalname)
                 const filesExtenstions = path.extname(file.originalname)
-              //  console.log('extensiond', path.extname(file.originalname))
+                //  console.log('extensiond', path.extname(file.originalname))
                 const extractNameOnly = path.basename(
                     file.originalname,
                     filesExtenstions
@@ -69,9 +71,9 @@ const store = multer({
 
 const uploadMiddleware = (req, res, next) => {
     const upload = store.single('reportssFiles')
-  //  console.log('upload', upload)
+    //  console.log('upload', upload)
     upload(req, res, function (err) {
-    //    console.log('we are here')
+        //    console.log('we are here')
         if (err instanceof multer.MulterError) {
             return res.status(400).send('File too large')
         } else if (err) {
@@ -84,15 +86,21 @@ const uploadMiddleware = (req, res, next) => {
 }
 router.patch(
     '/v1/update/:rid',
+    isAuth,
     uploadMiddleware,
     examinerReport.updateExaminerReport
 )
-router.get('/v1/getReport/:rid', examinerReport.getExaminerReport)
+router.get('/v1/getReport/:rid', isAuth, examinerReport.getExaminerReport)
 /** get all reports */
-router.get('/v1/allexaminerReports', examinerReport.getAllExaminerReports)
+router.get(
+    '/v1/allexaminerReports',
+    isAuth,
+    examinerReport.getAllExaminerReports
+)
 
 router.delete(
     '/v1/remove/ExFiles/:rpid/:fid/:secId',
+    isAuth,
     examinerReport.removeExaminerReportFile
 )
 module.exports = router

@@ -4,9 +4,11 @@ const { body } = require('express-validator')
 const AdminModel = require('../models/administrator')
 
 const adminController = require('../controllers/administrator')
+const isAuth = require('../middleware/is-auth')
 
 router.post(
     '/v1/create',
+    isAuth,
     [
         body('email')
             .isEmail()

@@ -5,6 +5,8 @@ const opponentReport = require('../controllers/opponentReports')
 const multer = require('multer')
 const { GridFsStorage } = require('multer-gridfs-storage')
 
+const isAuth = require('../middleware/is-auth')
+
 const path = require('path')
 const crypto = require('crypto')
 const mongoose = require('mongoose')
@@ -68,7 +70,7 @@ const uploadMiddleware = (req, res, next) => {
     const upload = store.single('reportssFiles')
 
     upload(req, res, function (err) {
-       // console.log('we are here')
+        // console.log('we are here')
         if (err instanceof multer.MulterError) {
             return res.status(400).send('File too large')
         } else if (err) {
@@ -81,15 +83,21 @@ const uploadMiddleware = (req, res, next) => {
 }
 router.patch(
     '/v1/update/:rid',
+    isAuth,
     uploadMiddleware,
     opponentReport.updateOpponentReport
 )
-router.get('/v1/getReport/:rid', opponentReport.getOpponentReport)
+router.get('/v1/getReport/:rid', isAuth, opponentReport.getOpponentReport)
 /** get all reports */
-router.get('/v1/allopponentReports', opponentReport.getAllOpponentReports)
+router.get(
+    '/v1/allopponentReports',
+    isAuth,
+    opponentReport.getAllOpponentReports
+)
 
 router.delete(
     '/v1/remove/ExFiles/:rpid/:fid/:secId',
+    isAuth,
     opponentReport.removeOpponentReportFile
 )
 module.exports = router

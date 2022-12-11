@@ -6,6 +6,7 @@ const { GridFsStorage } = require('multer-gridfs-storage')
 const path = require('path')
 const crypto = require('crypto')
 const mongoose = require('mongoose')
+const isAuth = require('../middleware/is-auth')
 
 require('dotenv').config()
 const mongoUri = process.env.MONGO_R_URL
@@ -66,7 +67,7 @@ const uploadMiddleware = (req, res, next) => {
     const upload = store.array('projectFiles')
 
     upload(req, res, function (err) {
-       // console.log('we are here')
+        // console.log('we are here')
         if (err instanceof multer.MulterError) {
             return res.status(400).send('File too large')
         } else if (err) {
@@ -80,12 +81,14 @@ const uploadMiddleware = (req, res, next) => {
 
 router.post(
     '/v1/create/:pid',
+    isAuth,
     uploadMiddleware,
     registrationController.addRegistration
 )
 
 router.delete(
     '/v1/remove/:pid/:rid',
+    isAuth,
     registrationController.removeRegistration
 )
 

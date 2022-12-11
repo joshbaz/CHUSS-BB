@@ -4,6 +4,8 @@ const opponentController = require('../controllers/opponent')
 const multer = require('multer')
 const { GridFsStorage } = require('multer-gridfs-storage')
 
+const isAuth = require('../middleware/is-auth')
+
 const path = require('path')
 const crypto = require('crypto')
 const mongoose = require('mongoose')
@@ -75,9 +77,9 @@ const store = multer({
 
 const uploadMiddleware = (req, res, next) => {
     const upload = store.array('projectFiles')
-   // console.log('upload', upload)
+    // console.log('upload', upload)
     upload(req, res, function (err) {
-   //     console.log('we are here')
+        //     console.log('we are here')
         if (err instanceof multer.MulterError) {
             return res.status(400).send('File too large')
         } else if (err) {
@@ -91,36 +93,47 @@ const uploadMiddleware = (req, res, next) => {
 
 router.post(
     '/v1/project/create/:pid',
+    isAuth,
     uploadMiddleware,
     opponentController.createProjectOpponent
 )
 
-router.post('/v1/project/assign/:pid', opponentController.assignOpponent)
+router.post(
+    '/v1/project/assign/:pid',
+    isAuth,
+    opponentController.assignOpponent
+)
 
 /** get all opponent */
-router.get('/v1/getall', opponentController.getAllOpponents)
+router.get('/v1/getall', isAuth, opponentController.getAllOpponents)
 
 /** get individual opponent */
-router.get('/v1/individual/:id', opponentController.getIndividualOpponent)
+router.get(
+    '/v1/individual/:id',
+    isAuth,
+    opponentController.getIndividualOpponent
+)
 
 /** get paginated examiners */
-router.get('/v1/popponents', opponentController.getPaginatedOpponents)
+router.get('/v1/popponents', isAuth, opponentController.getPaginatedOpponents)
 
 /** delete project App letter */
 router.patch(
     '/v1/letter/projectopponent/delete/:pid/:fid',
+    isAuth,
     opponentController.deleteProjectAppLetter
 )
 
-
 router.patch(
     '/v1/letter/projectopponent/add/:pid/:eid',
+    isAuth,
     uploadMiddleware,
     opponentController.createProjectAppOpponentFile
 )
 
 router.patch(
     '/v1/projectopponent/remove/:pid/:eid/:secid',
+    isAuth,
     opponentController.removeProjectOpponentsR
 )
 
