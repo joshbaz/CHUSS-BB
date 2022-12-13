@@ -90,7 +90,9 @@ router.patch(
     uploadMiddleware,
     examinerReport.updateExaminerReport
 )
-router.get('/v1/getReport/:rid', isAuth, examinerReport.getExaminerReport)
+router.get('/v1/getReport/:rid', 
+//isAuth, 
+examinerReport.getExaminerReport)
 /** get all reports */
 router.get(
     '/v1/allexaminerReports',
