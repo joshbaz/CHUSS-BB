@@ -83,21 +83,23 @@ const uploadMiddleware = (req, res, next) => {
 }
 router.patch(
     '/v1/update/:rid',
-    isAuth,
+    //isAuth,
     uploadMiddleware,
     opponentReport.updateOpponentReport
 )
-router.get('/v1/getReport/:rid', isAuth, opponentReport.getOpponentReport)
+router.get('/v1/getReport/:rid', 
+//isAuth, 
+opponentReport.getOpponentReport)
 /** get all reports */
 router.get(
     '/v1/allopponentReports',
-    isAuth,
+    //isAuth,
     opponentReport.getAllOpponentReports
 )
 
 router.delete(
     '/v1/remove/ExFiles/:rpid/:fid/:secId',
-    isAuth,
+    //isAuth,
     opponentReport.removeOpponentReportFile
 )
 module.exports = router

@@ -91,49 +91,55 @@ const uploadMiddleware = (req, res, next) => {
 }
 router.post(
     '/v1/project/create/:pid',
-    isAuth,
+    //isAuth,
     uploadMiddleware,
     examinerController.createProjectExaminer
 )
 
 router.post(
     '/v1/project/assign/:pid',
-    isAuth,
+    //isAuth,
     examinerController.assignExaminer
 )
 
 /** get all examiners */
-router.get('/v1/getall', isAuth, examinerController.getAllExaminers)
+router.get('/v1/getall', 
+//isAuth, 
+examinerController.getAllExaminers)
 
 /** get individual examiners */
 router.get(
     '/v1/individual/:id',
-    isAuth,
+    // isAuth,
     examinerController.getIndividualExaminer
 )
 
 /** create examiners */
 router.post(
     '/v1/create',
-    isAuth,
+    // isAuth,
     uploadMiddleware,
     examinerController.createExaminer
 )
 
 /** get paginated examiners */
-router.get('/v1/pexaminers', isAuth, examinerController.getPaginatedExaminers)
+router.get(
+    '/v1/pexaminers',
+    //isAuth,
+    examinerController.getPaginatedExaminers
+)
 
 /** get students by examiners */
 router.get(
     '/v1/students/:e_id',
-    isAuth,
+    //isAuth,
     examinerController.getStudentsByExaminer
 )
 
 /** update examiners */
 router.patch(
     '/v1/update/:id',
-    isAuth,
+    //isAuth,
     uploadMiddleware,
     examinerController.updateExaminer
 )
@@ -141,32 +147,32 @@ router.patch(
 /** delete project App letter */
 router.patch(
     '/v1/letter/projectexaminer/delete/:pid/:fid',
-    isAuth,
+    //isAuth,
     examinerController.deleteProjectAppLetter
 )
 
 router.patch(
     '/v1/letter/projectexaminer/add/:pid/:eid',
-    isAuth,
+    //isAuth,
     uploadMiddleware,
     examinerController.createProjectAppExaminerFile
 )
 
 router.patch(
     '/v1/projectexaminers/remove/:pid/:eid/:secid',
-    isAuth,
+    //isAuth,
     examinerController.removeProjectExaminersR
 )
 
 router.delete(
     '/v1/examiners/remove/:eid',
-    isAuth,
+    //isAuth,
     examinerController.deleteExaminer
 )
 
 router.delete(
     '/v1/examiners/files/removes/:eid/:fid',
-    isAuth,
+    //isAuth,
     examinerController.deleteExFiles
 )
 

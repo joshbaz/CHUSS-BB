@@ -92,35 +92,41 @@ const uploadMiddleware = (req, res, next) => {
 
 router.post(
     '/v1/create',
-    isAuth,
+    //isAuth,
     uploadMiddleware,
     projectController.createProject
 )
 
 router.patch(
     '/v1/update/:id',
-    isAuth,
+    //isAuth,
     uploadMiddleware,
     projectController.updateProject
 )
 /** project status update */
 router.put(
     '/vl/status/update/:id',
-    isAuth,
+    //isAuth,
     projectController.updateProjectStatus
 )
 
-router.get('/vl/pprojects', isAuth, projectController.getPaginatedProjects)
+router.get('/vl/pprojects', 
+//isAuth, 
+projectController.getPaginatedProjects)
 
-router.get('/v1/projects/:id', isAuth, projectController.getIndividualProjects)
+router.get('/v1/projects/:id', 
+//isAuth, 
+projectController.getIndividualProjects)
 
 /** get all projects */
-router.get('/v1/allprojects', isAuth, projectController.getAllProjects)
+router.get('/v1/allprojects', 
+//isAuth, 
+projectController.getAllProjects)
 
 /** final submission */
 router.put(
     '/v1/finalsubmission/update/:id',
-    isAuth,
+    //isAuth,
     uploadMiddleware,
     projectController.putFinalSubmissionFiles
 )
@@ -128,7 +134,7 @@ router.put(
 /** candidate files */
 router.put(
     '/v1/candidatefiles/update/:id',
-    isAuth,
+    //isAuth,
     uploadMiddleware,
     projectController.putCandidateFiles
 )
@@ -136,7 +142,7 @@ router.put(
 /** viva files */
 router.put(
     '/v1/vivafiles/update/:id',
-    isAuth,
+    //isAuth,
     uploadMiddleware,
     projectController.putVivaFiles
 )
@@ -144,54 +150,54 @@ router.put(
 /** remove candidate files */
 router.delete(
     '/v1/remove/cfiles/:pid/:fid/:secId',
-    isAuth,
+    //isAuth,
     projectController.removeCandidateFile
 )
 /** remove viva files */
 router.delete(
     '/v1/remove/vfiles/:pid/:fid/:secId',
-    isAuth,
+    //isAuth,
     projectController.removePVivaFile
 )
 
 /** remove submission files */
 router.delete(
     '/v1/remove/sfiles/:pid/:fid/:secId',
-    isAuth,
+    //isAuth,
     projectController.removePFSubmissionFile
 )
 /** viva defense */
 router.put(
     '/v1/vivadefense/update/:id',
-    isAuth,
+    //isAuth,
     projectController.updateVivaDefense
 )
 
 /** date of final submission */
 router.put(
     '/v1/dateofsubmission/update/:id',
-    isAuth,
+    //isAuth,
     projectController.updateDateOfFinalSubmission
 )
 
 /** date of final submission */
 router.put(
     '/v1/graduation/update/:id',
-    isAuth,
+    //isAuth,
     projectController.updateDateOfGraduation
 )
 
 /** date of final submission */
 router.patch(
     '/v1/resubmission/update/:id',
-    isAuth,
+    //isAuth,
     projectController.updateResubmission
 )
 
 /** delete student */
 router.delete(
     '/v1/student/remove/:pid',
-    isAuth,
+    //isAuth,
     projectController.deleteProject
 )
 

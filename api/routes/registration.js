@@ -81,14 +81,14 @@ const uploadMiddleware = (req, res, next) => {
 
 router.post(
     '/v1/create/:pid',
-    isAuth,
+    //isAuth,
     uploadMiddleware,
     registrationController.addRegistration
 )
 
 router.delete(
     '/v1/remove/:pid/:rid',
-    isAuth,
+    //isAuth,
     registrationController.removeRegistration
 )
 

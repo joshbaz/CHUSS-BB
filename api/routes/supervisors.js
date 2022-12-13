@@ -10,37 +10,43 @@ router.post(
 
 router.post(
     '/v1/project/assign/:pid',
-    isAuth,
+   // isAuth,
     supervisorController.assignSupervisor
 )
 
 /** get all supervisors */
-router.get('/v1/getall', isAuth, supervisorController.getAllSupervisors)
+router.get('/v1/getall', 
+//isAuth,
+ supervisorController.getAllSupervisors)
 
 /** get individual supervisors */
 router.get(
     '/v1/individual/:id',
-    isAuth,
+    //isAuth,
     supervisorController.getIndividualSupervisor
 )
 
 /** create supervisors */
-router.post('/v1/create', isAuth, supervisorController.createSupervisor)
+router.post('/v1/create', 
+//isAuth, 
+supervisorController.createSupervisor)
 
 /** get paginated supervisors */
 router.get(
     '/v1/psupervisors',
-    isAuth,
+    //isAuth,
     supervisorController.getPaginatedSupervisors
 )
 
 /** update supervisors */
-router.patch('/v1/update/:id', isAuth, supervisorController.updateSupervisor)
+router.patch('/v1/update/:id', 
+//isAuth, 
+supervisorController.updateSupervisor)
 
 /** remove supervisors from project */
 router.patch(
     '/v1/project/remove/:pid/:sid',
-    isAuth,
+    //isAuth,
     supervisorController.removeProjectSupervisor
 )
 

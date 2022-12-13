@@ -10,6 +10,7 @@ const Moments = require('moment-timezone')
 let mongo = require('mongodb')
 var Grid = require('gridfs-stream')
 require('dotenv').config()
+
 const mongoUri = process.env.MONGO_R_URL
 
 const conn = mongoose.createConnection(mongoUri, {
@@ -67,6 +68,8 @@ exports.createProjectOpponent = async (req, res, next) => {
             error.statusCode = 404
             throw error
         }
+
+        const creationDate = Moments().tz('Africa/Kampala').format()
 
         let paymentInfo = []
 
@@ -195,6 +198,7 @@ exports.createProjectOpponent = async (req, res, next) => {
             opponent: savedOpponent._id,
             score: 0,
             reportStatus: 'pending',
+            creationDate: creationDate,
         })
 
         let savedReport = await opponentReport.save()
@@ -339,7 +343,7 @@ exports.getPaginatedOpponents = async (req, res, next) => {
         }
 
         let perPages = perPage || 8
-       // console.log('perPages', perPages)
+        // console.log('perPages', perPages)
         let overall_total = await OpponentModel.find().countDocuments()
 
         let getOpponents = await OpponentModel.find()
@@ -363,7 +367,7 @@ exports.getPaginatedOpponents = async (req, res, next) => {
             }).countDocuments()
 
             newArray[i].studentsNo = findProjectCount
-          //  console.log('newArray', newArray)
+            //  console.log('newArray', newArray)
 
             if (iterations === getOpponents.length) {
                 res.status(200).json({
@@ -454,12 +458,12 @@ exports.deleteProjectAppLetter = async (req, res, next) => {
 
         if (findFileDetail.fileId) {
             const initFileId = findFileDetail.fileId
-          //  console.log('initFileId', initFileId)
+            //  console.log('initFileId', initFileId)
             if (!initFileId || initFileId === 'undefined') {
                 return res.status(400).send('no document found')
             } else {
                 const newFileId = new mongoose.Types.ObjectId(initFileId)
-               // console.log('newFileId', newFileId)
+                // console.log('newFileId', newFileId)
 
                 const file = await gfs.files.findOne({ _id: newFileId })
                 const gsfb = new mongoose.mongo.GridFSBucket(conn.db, {
@@ -471,14 +475,14 @@ exports.deleteProjectAppLetter = async (req, res, next) => {
                         return next(err)
                     }
 
-                  //  console.log('file chunks deletion registration')
+                    //  console.log('file chunks deletion registration')
 
                     await ProjectFileModel.findByIdAndDelete(projectAppLId)
                     io.getIO().emit('updateop-project', {
                         actions: 'update-app-letter',
                         data: foundOpponent.toString(),
                     })
-                  //  console.log('registration finally deleted registration')
+                    //  console.log('registration finally deleted registration')
                     res.status(200).json(`Project App Letter has been deleted`)
                     //res.status(200).end()
                     return
@@ -490,7 +494,7 @@ exports.deleteProjectAppLetter = async (req, res, next) => {
                 actions: 'update-app-letter',
                 data: foundOpponent.toString(),
             })
-          //  console.log('not allowed file finally deleted registration')
+            //  console.log('not allowed file finally deleted registration')
             res.status(200).json(`File has been deleted`)
         }
     } catch (error) {
@@ -629,7 +633,7 @@ exports.removeProjectOpponentsR = async (req, res, next) => {
             if (secDetails) {
                 /** query out reports */
                 let allProjectExamReports = [...findProject.opponentReports]
-              //  console.log('allProjectExamReports', allProjectExamReports)
+                //  console.log('allProjectExamReports', allProjectExamReports)
                 let foundReports = allProjectExamReports.find(
                     (element) =>
                         element.reportId.opponent.toString() ===
@@ -639,7 +643,7 @@ exports.removeProjectOpponentsR = async (req, res, next) => {
 
                 if (foundReports) {
                     /** remove the report from project */
-                 //   console.log('saved new ', foundReports)
+                    //   console.log('saved new ', foundReports)
                     let newAllReports = allProjectExamReports.filter((data) => {
                         if (
                             foundReports._id.toString() !== data._id.toString()
@@ -652,7 +656,7 @@ exports.removeProjectOpponentsR = async (req, res, next) => {
 
                     findProject.opponentReports = newAllReports
                     await findProject.save()
-                  //  console.log('saved new ')
+                    //  console.log('saved new ')
                     /** Delete the report from reports */
                     await OpponentReportModel.findByIdAndDelete(
                         foundReports.reportId._id
@@ -684,14 +688,14 @@ exports.removeProjectOpponentsR = async (req, res, next) => {
                         /** delete the project file found */
                         if (findFileDetail.fileId) {
                             const initFileId = findFileDetail.fileId
-                         //   console.log('initFileId', initFileId)
+                            //   console.log('initFileId', initFileId)
                             if (!initFileId || initFileId === 'undefined') {
                                 return res.status(400).send('no document found')
                             } else {
                                 const newFileId = new mongoose.Types.ObjectId(
                                     initFileId
                                 )
-                              //  console.log('newFileId', newFileId)
+                                //  console.log('newFileId', newFileId)
 
                                 const file = await gfs.files.findOne({
                                     _id: newFileId,
@@ -717,7 +721,7 @@ exports.removeProjectOpponentsR = async (req, res, next) => {
                                         await ProjectFileModel.findByIdAndDelete(
                                             findFileDetail._id
                                         )
-                                      //  console.log('opponnet finally deleted ')
+                                        //  console.log('opponnet finally deleted ')
 
                                         io.getIO().emit('updatestudent', {
                                             actions: 'update-student',

@@ -93,47 +93,51 @@ const uploadMiddleware = (req, res, next) => {
 
 router.post(
     '/v1/project/create/:pid',
-    isAuth,
+    //isAuth,
     uploadMiddleware,
     opponentController.createProjectOpponent
 )
 
 router.post(
     '/v1/project/assign/:pid',
-    isAuth,
+    //isAuth,
     opponentController.assignOpponent
 )
 
 /** get all opponent */
-router.get('/v1/getall', isAuth, opponentController.getAllOpponents)
+router.get('/v1/getall', 
+//isAuth, 
+opponentController.getAllOpponents)
 
 /** get individual opponent */
 router.get(
     '/v1/individual/:id',
-    isAuth,
+    //isAuth,
     opponentController.getIndividualOpponent
 )
 
 /** get paginated examiners */
-router.get('/v1/popponents', isAuth, opponentController.getPaginatedOpponents)
+router.get('/v1/popponents', 
+//isAuth, 
+opponentController.getPaginatedOpponents)
 
 /** delete project App letter */
 router.patch(
     '/v1/letter/projectopponent/delete/:pid/:fid',
-    isAuth,
+    //isAuth,
     opponentController.deleteProjectAppLetter
 )
 
 router.patch(
     '/v1/letter/projectopponent/add/:pid/:eid',
-    isAuth,
+    //isAuth,
     uploadMiddleware,
     opponentController.createProjectAppOpponentFile
 )
 
 router.patch(
     '/v1/projectopponent/remove/:pid/:eid/:secid',
-    isAuth,
+    //isAuth,
     opponentController.removeProjectOpponentsR
 )
 

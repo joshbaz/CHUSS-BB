@@ -86,7 +86,7 @@ const uploadMiddleware = (req, res, next) => {
 }
 router.patch(
     '/v1/update/:rid',
-    isAuth,
+    //isAuth,
     uploadMiddleware,
     examinerReport.updateExaminerReport
 )
@@ -94,13 +94,13 @@ router.get('/v1/getReport/:rid', isAuth, examinerReport.getExaminerReport)
 /** get all reports */
 router.get(
     '/v1/allexaminerReports',
-    isAuth,
+    //isAuth,
     examinerReport.getAllExaminerReports
 )
 
 router.delete(
     '/v1/remove/ExFiles/:rpid/:fid/:secId',
-    isAuth,
+    //isAuth,
     examinerReport.removeExaminerReportFile
 )
 module.exports = router
