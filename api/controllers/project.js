@@ -100,11 +100,11 @@ exports.createProject = async (req, res, next) => {
                     notes: `New ${programType} student entry`,
                     completed: true,
                 },
-                {
-                    status: 'Appointing Of Supervisors',
-                    notes: '',
-                    active: true,
-                },
+                // {
+                //     status: 'Appointing Of Supervisors',
+                //     notes: '',
+                //     active: true,
+                // },
                 {
                     status: 'Research Approval',
                     notes: '',
@@ -113,22 +113,22 @@ exports.createProject = async (req, res, next) => {
                 {
                     status: 'Data Collection',
                     notes: '',
-                    active: true,
+                    active: false,
                 },
                 {
                     status: 'Thesis Writing',
                     notes: '',
-                    active: true,
+                    active: false,
                 },
+                // {
+                //     status: 'Intention to Submit',
+                //     notes: '',
+                //     active: true,
+                // },
                 {
-                    status: 'Intention to Submit',
+                    status: 'Appointing of Examiners',
                     notes: '',
-                    active: true,
-                },
-                {
-                    status: 'Appointment of Examiners',
-                    notes: '',
-                    active: true,
+                    active: false,
                 },
                 {
                     status: 'Marking In Progress',
