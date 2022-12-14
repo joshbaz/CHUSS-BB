@@ -62,7 +62,7 @@ exports.createProject = async (req, res, next) => {
             alternativeEmail,
         } = req.body
 
-       // console.log('all project files', req.files)
+        // console.log('all project files', req.files)
 
         //find Program type
         const findProposedFee = await ProgramTypeModel.findOne({
@@ -93,7 +93,7 @@ exports.createProject = async (req, res, next) => {
         const project = new ProjectModel({
             _id: mongoose.Types.ObjectId(),
             topic: Topic,
-            activeStatus: 'Thesis / dessertation Approval',
+            activeStatus: 'Appointing Of Supervisors',
             projectStatus: [
                 {
                     status: 'Admissions',
@@ -101,14 +101,34 @@ exports.createProject = async (req, res, next) => {
                     completed: true,
                 },
                 {
-                    status: 'Thesis / dessertation Approval',
-                    notes: 'Approval of the thesis/ dessertation',
+                    status: 'Appointing Of Supervisors',
+                    notes: '',
                     active: true,
                 },
                 {
-                    status: 'Looking For Examinar',
+                    status: 'Research Approval',
                     notes: '',
-                    completed: false,
+                    active: true,
+                },
+                {
+                    status: 'Data Collection',
+                    notes: '',
+                    active: true,
+                },
+                {
+                    status: 'Thesis Writing',
+                    notes: '',
+                    active: true,
+                },
+                {
+                    status: 'Intention to Submit',
+                    notes: '',
+                    active: true,
+                },
+                {
+                    status: 'Appointment of Examiners',
+                    notes: '',
+                    active: true,
                 },
                 {
                     status: 'Marking In Progress',
@@ -467,7 +487,7 @@ exports.updateProjectStatus = async (req, res, next) => {
                         return data
                     })
 
-                  //  console.log('filtered data', filteredArray, newDataArray)
+                    //  console.log('filtered data', filteredArray, newDataArray)
 
                     findProject.projectStatus = [
                         ...newDataArray,
@@ -527,7 +547,7 @@ exports.getPaginatedProjects = async (req, res, next) => {
         const { perPage, page } = req.body
 
         let currentPage
-      //  console.log('currentPages', req.query.page, page)
+        //  console.log('currentPages', req.query.page, page)
         if (page === undefined) {
             currentPage = 1
         } else {
@@ -536,7 +556,7 @@ exports.getPaginatedProjects = async (req, res, next) => {
 
         let perPages = perPage || 8
 
-       // console.log('currentPage', currentPage)
+        // console.log('currentPage', currentPage)
 
         //total of all projects
         let overall_total = await ProjectModel.find().countDocuments()
@@ -694,7 +714,7 @@ exports.removeCandidateFile = async (req, res, next) => {
             error.statusCode = 404
             throw error
         }
-     //   console.log('filed', findMainFile)
+        //   console.log('filed', findMainFile)
         /** gather all files */
         let allFiles = [...findProject.files]
 
@@ -727,10 +747,10 @@ exports.removeCandidateFile = async (req, res, next) => {
                         return next(err)
                     }
 
-                   // console.log('file chunks deletion registration')
+                    // console.log('file chunks deletion registration')
 
                     await ProjectFileModel.findByIdAndDelete(findMainFile._id)
-                  //  console.log('registration finally deleted registration')
+                    //  console.log('registration finally deleted registration')
                     io.getIO().emit('updatestudent', {
                         actions: 'update-student',
                         data: findProject._id.toString(),
@@ -742,7 +762,7 @@ exports.removeCandidateFile = async (req, res, next) => {
             }
         } else {
             await ProjectFileModel.findByIdAndDelete(findMainFile._id)
-           // console.log('not allowed registration finally deleted registration')
+            // console.log('not allowed registration finally deleted registration')
             io.getIO().emit('updatestudent', {
                 actions: 'update-student',
                 data: findProject._id.toString(),
@@ -762,7 +782,7 @@ exports.removePVivaFile = async (req, res, next) => {
         const projectId = req.params.pid
         const fileId = req.params.fid
         const secId = req.params.secId
-       // console.log('testing it', projectId, fileId, secId, secId.toString())
+        // console.log('testing it', projectId, fileId, secId, secId.toString())
         const findProject = await ProjectModel.findById(projectId).populate(
             'files.fileId'
         )
@@ -780,11 +800,11 @@ exports.removePVivaFile = async (req, res, next) => {
             error.statusCode = 404
             throw error
         }
-       // console.log('filed', findMainFile, 'ee', findProject)
+        // console.log('filed', findMainFile, 'ee', findProject)
         /** gather all files */
         let allFiles = [...findProject.vivaFiles]
         /** remove the file from project files */
-      //  console.log('allFiles', allFiles)
+        //  console.log('allFiles', allFiles)
         let newFiles = allFiles.filter((data) => {
             if (data._id.toString() === secId.toString()) {
                 return
@@ -794,7 +814,7 @@ exports.removePVivaFile = async (req, res, next) => {
         })
         /** save the file */
         findProject.vivaFiles = newFiles
-      //  console.log('allFiles', newFiles)
+        //  console.log('allFiles', newFiles)
         await findProject.save()
 
         const initFileId = findMainFile.fileId
@@ -814,10 +834,10 @@ exports.removePVivaFile = async (req, res, next) => {
                         return next(err)
                     }
 
-                  //  console.log('file chunks deletion registration')
+                    //  console.log('file chunks deletion registration')
 
                     await ProjectFileModel.findByIdAndDelete(findMainFile._id)
-                   // console.log('registration finally deleted registration')
+                    // console.log('registration finally deleted registration')
                     io.getIO().emit('updatestudent', {
                         actions: 'update-student',
                         data: findProject._id.toString(),
@@ -829,7 +849,7 @@ exports.removePVivaFile = async (req, res, next) => {
             }
         } else {
             await ProjectFileModel.findByIdAndDelete(findMainFile._id)
-         //   console.log('not allowed registration finally deleted registration')
+            //   console.log('not allowed registration finally deleted registration')
             io.getIO().emit('updatestudent', {
                 actions: 'update-student',
                 data: findProject._id.toString(),
@@ -867,7 +887,7 @@ exports.removePFSubmissionFile = async (req, res, next) => {
             error.statusCode = 404
             throw error
         }
-      //  console.log('filed', findMainFile)
+        //  console.log('filed', findMainFile)
         /** gather all files */
         let allFiles = [...findProject.FinalSubmissionFiles]
         /** remove the file from project files */
@@ -899,10 +919,10 @@ exports.removePFSubmissionFile = async (req, res, next) => {
                         return next(err)
                     }
 
-                  //  console.log('file chunks deletion registration')
+                    //  console.log('file chunks deletion registration')
 
                     await ProjectFileModel.findByIdAndDelete(findMainFile._id)
-                   // console.log('registration finally deleted registration')
+                    // console.log('registration finally deleted registration')
                     io.getIO().emit('updatestudent', {
                         actions: 'update-student',
                         data: findProject._id.toString(),
@@ -914,7 +934,7 @@ exports.removePFSubmissionFile = async (req, res, next) => {
             }
         } else {
             await ProjectFileModel.findByIdAndDelete(findMainFile._id)
-         //   console.log('not allowed registration finally deleted registration')
+            //   console.log('not allowed registration finally deleted registration')
             io.getIO().emit('updatestudent', {
                 actions: 'update-student',
                 data: findProject._id.toString(),
