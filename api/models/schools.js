@@ -13,7 +13,9 @@ const schoolSchema = mongoose.Schema({
         type: String,
     },
     email: String,
+    otherEmail: String,
     officeNumber: String,
+    mobileNumber: String,
 
     departments: [
         {

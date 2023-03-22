@@ -56,8 +56,6 @@ exports.createProjectOpponent = async (req, res, next) => {
             bankAddress,
             bankCity,
             typeOfExaminer,
-            examinerAppLetter,
-            projectAppLetter,
         } = req.body
 
         const projectId = req.params.pid
@@ -114,6 +112,7 @@ exports.createProjectOpponent = async (req, res, next) => {
             otherTitles,
             paymentInfo,
             typeOfExaminer,
+            preferredPayment,
         })
 
         const savedOpponent = await opponent.save()
@@ -332,7 +331,7 @@ exports.getAllOpponents = async (req, res, next) => {
 /** paginated opponents */
 exports.getPaginatedOpponents = async (req, res, next) => {
     try {
-        const { perPage, page } = req.body
+        const { perPage, page } = req.params
 
         let currentPage
 
@@ -783,6 +782,182 @@ exports.removeProjectOpponentsR = async (req, res, next) => {
 
             // res.status(200).json('returned values')
         }
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500
+        }
+        next(error)
+    }
+}
+
+//update the opponent from examiner
+exports.updateOpponent = async (req, res, next) => {
+    try {
+        const {
+            jobtitle,
+            name,
+            email,
+            phoneNumber,
+            postalAddress,
+            countryOfResidence,
+            placeOfWork,
+            otherTitles,
+            preferredPayment,
+            mobileOperator,
+            mobileSubscriberName,
+            mobileNumber,
+            bank,
+            AccountName,
+            AccountNumber,
+            swift_bicCode,
+            bankCode,
+            branchCode,
+            bankAddress,
+            bankCity,
+        } = req.body
+
+        const opponentId = req.params.oid
+
+        const findOpponent = await OpponentModel.findById(opponentId)
+        console.log('opponent', findOpponent)
+        if (!findOpponent) {
+            const error = new Error('Opponent Not Found')
+            error.statusCode = 404
+            throw error
+        }
+
+        let paymentInfo = []
+
+        if (preferredPayment === 'mobileMoney') {
+            paymentInfo = [
+                {
+                    ...findOpponent.paymentInfo[0],
+                    preferredPayment,
+                    mobileOperator,
+                    mobileSubscriberName,
+                    mobileNumber,
+                },
+            ]
+        } else {
+        }
+
+        if (preferredPayment === 'Bank Transfer/Money Transfer /SWIFT') {
+            paymentInfo = [
+                {
+                    ...findOpponent.paymentInfo[0],
+                    preferredPayment,
+                    bank,
+                    AccountName: AccountName,
+                    AccountNumber: AccountNumber,
+                    swift_bicCode,
+                    bankCode,
+                    branchCode,
+                    bankAddress,
+                    bankCity,
+                },
+            ]
+        } else {
+        }
+
+        findOpponent.jobtitle = jobtitle
+        findOpponent.name = name
+        findOpponent.email = email
+        findOpponent.phoneNumber = phoneNumber
+        findOpponent.postalAddress = postalAddress
+        findOpponent.countryOfResidence = countryOfResidence
+        findOpponent.placeOfWork = placeOfWork
+        findOpponent.otherTitles = otherTitles
+        findOpponent.paymentInfo = paymentInfo
+        findOpponent.preferredPayment = preferredPayment
+
+        const savedOpponent = await findOpponent.save()
+        res.status(201).json('Opponent has been successfully updated')
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500
+        }
+        next(error)
+    }
+}
+
+/** create opponent from project */
+exports.createMainOpponent = async (req, res, next) => {
+    try {
+        const {
+            jobtitle,
+            name,
+            email,
+            phoneNumber,
+            postalAddress,
+            countryOfResidence,
+            placeOfWork,
+            otherTitles,
+            preferredPayment,
+            mobileOperator,
+            mobileSubscriberName,
+            mobileNumber,
+            bank,
+            AccName,
+            AccNumber,
+            swift_bicCode,
+            bankCode,
+            branchCode,
+            bankAddress,
+            bankCity,
+            typeOfExaminer,
+        } = req.body
+
+        const creationDate = Moments().tz('Africa/Kampala').format()
+
+        let paymentInfo = []
+
+        if (preferredPayment === 'mobileMoney') {
+            paymentInfo = [
+                {
+                    preferredPayment,
+                    mobileOperator,
+                    mobileSubscriberName,
+                    mobileNumber,
+                },
+            ]
+        }
+
+        if (preferredPayment === 'Bank Transfer/Money Transfer /SWIFT') {
+            paymentInfo = [
+                {
+                    preferredPayment,
+                    bank,
+                    AccountName: AccName,
+                    AccountNumber: AccNumber,
+                    swift_bicCode,
+                    bankCode,
+                    branchCode,
+                    bankAddress,
+                    bankCity,
+                },
+            ]
+        }
+
+        /** instance of an opponent */
+
+        const opponent = new OpponentModel({
+            _id: new mongoose.Types.ObjectId(),
+            jobtitle,
+            name,
+            email,
+            phoneNumber,
+            postalAddress,
+            countryOfResidence,
+            placeOfWork,
+            otherTitles,
+            paymentInfo,
+            typeOfExaminer,
+            preferredPayment,
+        })
+
+        const savedOpponent = await opponent.save()
+
+        res.status(201).json('Opponent has been successfully created')
     } catch (error) {
         if (!error.statusCode) {
             error.statusCode = 500

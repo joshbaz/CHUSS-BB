@@ -5,38 +5,38 @@ const isAuth = require('../middleware/is-auth')
 /** program type */
 router.post(
     '/v1/programType/create',
-    //isAuth,
+    isAuth,
     preferenceController.createProgramType
 )
 
 router.get(
     '/v1/programType/getall',
-    //isAuth,
+    isAuth,
     preferenceController.getAllProgramTypes
 )
 
 router.put(
     '/v1/programType/edit/:typeId',
-    //isAuth,
+    isAuth,
     preferenceController.editProgramType
 )
 
 /** academic Year */
 router.post(
     '/v1/academicYear/create',
-    //isAuth,
+    isAuth,
     preferenceController.createAcademicYear
 )
 
 router.get(
     '/v1/academicYear/getall',
-    //isAuth,
+    isAuth,
     preferenceController.getAllAcademicYears
 )
 
 router.put(
     '/v1/academicYear/edit/:yearId',
-    //isAuth,
+    isAuth,
     preferenceController.editAcademicYear
 )
 

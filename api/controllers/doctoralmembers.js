@@ -145,7 +145,7 @@ exports.getAllMembers = async (req, res, next) => {
 /** paginated examiners */
 exports.getPaginatedMembers = async (req, res, next) => {
     try {
-        const { perPage, page } = req.body
+        const { perPage, page } = req.params
 
         let currentPage
 

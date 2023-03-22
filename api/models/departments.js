@@ -10,8 +10,10 @@ const departmentSchema = mongoose.Schema({
         type: String,
     },
     email: String,
+    otherEmail: String,
     officeNumber: String,
-    creationDate: String,
+    mobileNumber: String,
+    creationDate: Date,
 })
 
 module.exports = mongoose.model('departments', departmentSchema)

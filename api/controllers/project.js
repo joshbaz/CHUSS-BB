@@ -167,107 +167,6 @@ exports.createProject = async (req, res, next) => {
 
         await project.save()
 
-        // if (req.files) {
-        //     for (let iteration = 0; iteration < req.files.length; iteration++) {
-        //         //scanned Form
-        //         if (req.files[iteration].metadata.name === 'Intent') {
-        //             const filesExtenstions = path
-        //                 .extname(req.files[iteration].originalname)
-        //                 .slice(1)
-        //             const saveFile = new ProjectFileModel({
-        //                 _id: mongoose.Types.ObjectId(),
-        //                 fileId: req.files[iteration].id,
-        //                 fileName: req.files[iteration].metadata.name,
-        //                 fileExtension: filesExtenstions,
-        //                 fileType: req.files[iteration].mimetype,
-        //                 fileSize: req.files[iteration].size,
-        //                 description: 'scannedForm',
-        //             })
-
-        //             let savedFiles = await saveFile.save()
-
-        //             savedProject.files = [
-        //                 ...savedProject.files,
-        //                 {
-        //                     fileId: savedFiles._id,
-        //                 },
-        //             ]
-
-        //             await savedProject.save()
-        //         }
-
-        //         //thesisfile
-        //         if (req.files[iteration].metadata.name === 'thesis') {
-        //             const filesExtenstions = path
-        //                 .extname(req.files[iteration].originalname)
-        //                 .slice(1)
-        //             const saveFile = new ProjectFileModel({
-        //                 _id: mongoose.Types.ObjectId(),
-        //                 fileId: req.files[iteration].id,
-        //                 fileName: req.files[iteration].metadata.name,
-        //                 fileExtension: filesExtenstions,
-        //                 fileType: req.files[iteration].mimetype,
-        //                 fileSize: req.files[iteration].size,
-        //                 description: 'thesisfile',
-        //             })
-
-        //             let savedFiles = await saveFile.save()
-
-        //             savedProject.files = [
-        //                 ...savedProject.files,
-        //                 {
-        //                     fileId: savedFiles._id,
-        //                 },
-        //             ]
-
-        //             await savedProject.save()
-        //         }
-        //     }
-        // } else {
-        // }
-
-        // if (scannedForm !== null) {
-        //     const file = new ProjectFileModel({
-        //         _id: mongoose.Types.ObjectId(),
-        //         fileName: scannedForm.name,
-        //         fileExtension: scannedForm.ext,
-        //         fileData: scannedForm.buffer,
-        //         description: 'scannedForm',
-        //     })
-
-        //     let savefile = await file.save()
-        //     savedProject.files = [
-        //         ...savedProject.files,
-        //         {
-        //             fileId: savefile._id,
-        //         },
-        //     ]
-
-        //     await savedProject.save()
-        // } else {
-        // }
-
-        // if (thesisfile !== null) {
-        //     const file = new ProjectFileModel({
-        //         _id: mongoose.Types.ObjectId(),
-        //         fileName: thesisfile.name,
-        //         fileExtension: thesisfile.ext,
-        //         fileData: thesisfile.buffer,
-        //         description: 'thesisfile',
-        //     })
-
-        //     let savefile = await file.save()
-
-        //     savedProject.files = [
-        //         ...savedProject.files,
-        //         {
-        //             fileId: savefile._id,
-        //         },
-        //     ]
-
-        //     await savedProject.save()
-        // } else {
-        // }
         io.getIO().emit('new-student', {
             actions: 'new-student',
         })
@@ -345,64 +244,7 @@ exports.updateProject = async (req, res, next) => {
 
         await findProject.save()
 
-        // if (req.files) {
-        //     for (let iteration = 0; iteration < req.files.length; iteration++) {
-        //         //scanned Form
-        //         if (req.files[iteration].metadata.name === 'Intent') {
-        //             const filesExtenstions = path
-        //                 .extname(req.files[iteration].originalname)
-        //                 .slice(1)
-        //             const saveFile = new ProjectFileModel({
-        //                 _id: mongoose.Types.ObjectId(),
-        //                 fileId: req.files[iteration].id,
-        //                 fileName: req.files[iteration].metadata.name,
-        //                 fileExtension: filesExtenstions,
-        //                 fileType: req.files[iteration].mimetype,
-        //                 fileSize: req.files[iteration].size,
-        //                 description: 'scannedForm',
-        //             })
-
-        //             let savedFiles = await saveFile.save()
-
-        //             findProject.files = [
-        //                 ...findProject.files,
-        //                 {
-        //                     fileId: savedFiles._id,
-        //                 },
-        //             ]
-
-        //             await findProject.save()
-        //         }
-
-        //         //thesisfile
-        //         if (req.files[iteration].metadata.name === 'thesis') {
-        //             const filesExtenstions = path
-        //                 .extname(req.files[iteration].originalname)
-        //                 .slice(1)
-        //             const saveFile = new ProjectFileModel({
-        //                 _id: mongoose.Types.ObjectId(),
-        //                 fileId: req.files[iteration].id,
-        //                 fileName: req.files[iteration].metadata.name,
-        //                 fileExtension: filesExtenstions,
-        //                 fileType: req.files[iteration].mimetype,
-        //                 fileSize: req.files[iteration].size,
-        //                 description: 'thesisfile',
-        //             })
-
-        //             let savedFiles = await saveFile.save()
-
-        //             findProject.files = [
-        //                 ...findProject.files,
-        //                 {
-        //                     fileId: savedFiles._id,
-        //                 },
-        //             ]
-
-        //             await findProject.save()
-        //         }
-        //     }
-        // } else {
-        // }
+        
         io.getIO().emit('updatestudent', {
             actions: 'update-student',
             data: findProject._id.toString(),
@@ -468,7 +310,7 @@ exports.updateProjectStatus = async (req, res, next) => {
                         actions: 'update-student',
                         data: findProject._id.toString(),
                     })
-                    return res.status(200).json('status 2 updated')
+                    return res.status(200).json('status  updated')
                 }
             }
 
@@ -498,7 +340,7 @@ exports.updateProjectStatus = async (req, res, next) => {
                         actions: 'update-student',
                         data: findProject._id.toString(),
                     })
-                    return res.status(200).json('status 4 updated')
+                    return res.status(200).json('status  updated')
                 } else {
                     findProject.projectStatus = [...newDataArray]
                     await findProject.save()
@@ -506,7 +348,7 @@ exports.updateProjectStatus = async (req, res, next) => {
                         actions: 'update-student',
                         data: findProject._id.toString(),
                     })
-                    return res.status(200).json('status 3 updated')
+                    return res.status(200).json('status  updated')
                 }
             }
 
@@ -529,7 +371,7 @@ exports.updateProjectStatus = async (req, res, next) => {
                     actions: 'update-student',
                     data: findProject._id.toString(),
                 })
-                res.status(200).json('status 1 updated')
+                res.status(200).json('status  updated')
             }
         }
     } catch (error) {

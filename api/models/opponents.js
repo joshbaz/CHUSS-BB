@@ -28,6 +28,7 @@ const opponentSchema = mongoose.Schema(
                 branchCode: String,
                 bankAddress: String,
                 bankCity: String,
+                _id: false,
             },
         ],
         generalAppointmentLetters: [

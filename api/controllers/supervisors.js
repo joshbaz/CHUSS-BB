@@ -121,7 +121,7 @@ exports.assignSupervisor = async (req, res, next) => {
 exports.getAllSupervisors = async (req, res, next) => {
     try {
         const findExaminers = await SupervisorModel.find()
-       
+
         res.status(200).json({
             items: findExaminers,
         })
@@ -136,7 +136,7 @@ exports.getAllSupervisors = async (req, res, next) => {
 /** paginated examiners */
 exports.getPaginatedSupervisors = async (req, res, next) => {
     try {
-        const { perPage, page } = req.body
+        const { perPage, page } = req.params
 
         let currentPage
 
@@ -147,7 +147,7 @@ exports.getPaginatedSupervisors = async (req, res, next) => {
         }
 
         let perPages = perPage || 8
-       
+
         let overall_total = await SupervisorModel.find().countDocuments()
 
         let getExaminers = await SupervisorModel.find()
@@ -187,7 +187,6 @@ exports.getIndividualSupervisor = async (req, res, next) => {
     try {
         const id = req.params.id
         let getExaminer = await SupervisorModel.findById(id)
-
 
         if (!getExaminer) {
             const error = new Error('supervisor not found')
@@ -258,7 +257,7 @@ exports.updateSupervisor = async (req, res, next) => {
         let examinerId = req.params.id
 
         const getExaminer = await SupervisorModel.findById(examinerId)
-       
+
         if (!getExaminer) {
             const error = new Error('Supervisor not found')
             error.statusCode = 404
@@ -275,7 +274,6 @@ exports.updateSupervisor = async (req, res, next) => {
         getExaminer.countryOfResidence = countryOfResidence
         getExaminer.placeOfWork = placeOfWork
 
-       
         await getExaminer.save()
 
         res.status(201).json('Supervisor has been successfully updated')
@@ -316,7 +314,6 @@ exports.removeProjectSupervisor = async (req, res, next) => {
             ) {
                 return data
             } else {
-               
                 return
             }
         })

@@ -64,8 +64,8 @@ exports.createAdmin = async (req, res, next) => {
 
 exports.loginUser = async (req, res, next) => {
     try {
-        const { email, password } = req.body
-       
+        const { email, password, staySigned } = req.body
+
         //find user
         const findOneUser = await AdminModel.findOne({ email: email })
 
@@ -93,7 +93,7 @@ exports.loginUser = async (req, res, next) => {
                 userId: findOneUser._id,
             },
             process.env.SECRET,
-            { expiresIn: '24h' }
+            staySigned === false ? { expiresIn: '24h' } : null
         )
 
         res.status(200).json({

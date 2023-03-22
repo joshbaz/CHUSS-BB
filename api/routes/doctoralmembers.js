@@ -5,45 +5,45 @@ const isAuth = require('../middleware/is-auth')
 
 router.post(
     '/v1/project/create/:pid',
-    //isAuth,
+    isAuth,
     doctoralController.createProjectDMember
 )
 
 router.post('/v1/project/assign/:pid', 
-//isAuth, 
+isAuth, 
 doctoralController.assignMember)
 
 /** get all supervisors */
 router.get('/v1/getall', 
-//isAuth, 
+isAuth, 
 doctoralController.getAllMembers)
 
 /** get individual supervisors */
 router.get(
     '/v1/individual/:id',
-    //isAuth,
+    isAuth,
     doctoralController.getIndividualMembers
 )
 
 /** create examiners */
 router.post('/v1/create', 
-//isAuth, 
+isAuth, 
 doctoralController.createCMembers)
 
 /** get paginated examiners */
-router.get('/v1/pdcmembers', 
-//isAuth, 
+router.get('/v1/pdcmembers/:perPage/:page', 
+isAuth, 
 doctoralController.getPaginatedMembers)
 
 /** update examiners */
 router.patch('/v1/update/:id', 
-//isAuth, 
+isAuth, 
 doctoralController.updateCMember)
 
 /** remove supervisors from project */
 router.patch(
     '/v1/project/remove/:pid/:sid',
-    //isAuth,
+    isAuth,
     doctoralController.removeProjectDCMember
 )
 

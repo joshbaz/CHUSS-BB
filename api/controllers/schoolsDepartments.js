@@ -7,7 +7,14 @@ const io = require('../../socket')
 /** create school */
 exports.createDepartment = async (req, res, next) => {
     try {
-        const { deptName, deptHead, email, officeNumber } = req.body
+        const {
+            deptName,
+            deptHead,
+            email,
+            officeNumber,
+            mobileNumber,
+            otherEmail,
+        } = req.body
         const schoolId = req.params.id
         const creationDate = Moments().tz('Africa/Kampala').format()
         //find the school
@@ -41,6 +48,8 @@ exports.createDepartment = async (req, res, next) => {
                     deptHead,
                     email,
                     officeNumber,
+                    otherEmail,
+                    mobileNumber,
                     creationDate: creationDate,
                 })
 
@@ -66,6 +75,8 @@ exports.createDepartment = async (req, res, next) => {
                 deptHead,
                 email,
                 officeNumber,
+                mobileNumber,
+                otherEmail,
                 creationDate: creationDate,
             })
 
@@ -78,7 +89,7 @@ exports.createDepartment = async (req, res, next) => {
 
             await findSchool.save()
             io.getIO().emit('updatedepartment', {
-                actions: 'update-department',
+                actions: 'add-department',
                 data: findSchool._id.toString(),
             })
             res.status(200).json('department added')
@@ -94,7 +105,14 @@ exports.createDepartment = async (req, res, next) => {
 /** update school */
 exports.updateDepartment = async (req, res, next) => {
     try {
-        const { deptName, deptHead, email, officeNumber } = req.body
+        const {
+            deptName,
+            deptHead,
+            email,
+            officeNumber,
+            mobileNumber,
+            otherEmail,
+        } = req.body
         const deptId = req.params.id
 
         const findDepartment = await DepartmentModel.findById(deptId)
@@ -109,6 +127,8 @@ exports.updateDepartment = async (req, res, next) => {
         findDepartment.deptHead = deptHead
         findDepartment.email = email
         findDepartment.officeNumber = officeNumber
+        findDepartment.mobileNumber = mobileNumber
+        findDepartment.otherEmail = otherEmail
 
         await findDepartment.save()
         io.getIO().emit('updatedepartment', {

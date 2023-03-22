@@ -4,8 +4,15 @@ const io = require('../../socket')
 /** create school */
 exports.createSchool = async (req, res, next) => {
     try {
-        const { schoolName, deanName, deanDesignation, email, officeNumber } =
-            req.body
+        const {
+            schoolName,
+            deanName,
+            deanDesignation,
+            email,
+            otherEmail,
+            officeNumber,
+            mobileNumber,
+        } = req.body
 
         const newSchool = new SchoolModel({
             _id: new mongoose.Types.ObjectId(),
@@ -13,10 +20,16 @@ exports.createSchool = async (req, res, next) => {
             deanName,
             deanDesignation,
             email,
+            otherEmail,
             officeNumber,
+            mobileNumber,
         })
 
         await newSchool.save()
+
+        io.getIO().emit('school-entity', {
+            actions: 'add-school',
+        })
 
         res.status(200).json('School created Successfully')
     } catch (error) {
@@ -30,8 +43,15 @@ exports.createSchool = async (req, res, next) => {
 /** update school */
 exports.updateSchool = async (req, res, next) => {
     try {
-        const { schoolName, deanName, deanDesignation, email, officeNumber } =
-            req.body
+        const {
+            schoolName,
+            deanName,
+            deanDesignation,
+            email,
+            otherEmail,
+            officeNumber,
+            mobileNumber,
+        } = req.body
         const id = req.params.id
 
         const findSchool = await SchoolModel.findById(id)
@@ -46,9 +66,16 @@ exports.updateSchool = async (req, res, next) => {
         findSchool.deanName = deanName
         findSchool.deanDesignation = deanDesignation
         findSchool.email = email
+        findSchool.otherEmail = otherEmail
         findSchool.officeNumber = officeNumber
+        findSchool.mobileNumber = mobileNumber
 
         await findSchool.save()
+
+        io.getIO().emit('school-entity', {
+            actions: 'update-school',
+            data: findSchool._id.toString(),
+        })
 
         res.status(200).json('school updated')
     } catch (error) {
@@ -82,7 +109,7 @@ exports.getAllSchools = async (req, res, next) => {
 /** paginated schools */
 exports.getPaginatedSchools = async (req, res, next) => {
     try {
-        const { perPage, page } = req.body
+        const { perPage, page } = req.params
 
         let currentPage
 
@@ -92,8 +119,13 @@ exports.getPaginatedSchools = async (req, res, next) => {
             currentPage = page
         }
 
-        let perPages = perPage || 8
-      
+        let perPages
+        if (perPage === 'undefined') {
+            perPages = 8
+        } else {
+            perPages = perPage
+        }
+
         let overall_total = await SchoolModel.find().countDocuments()
 
         let getSchools = await SchoolModel.find()
