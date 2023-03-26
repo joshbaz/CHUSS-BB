@@ -16,19 +16,10 @@ const projectSchema = mongoose.Schema(
 
         projectStatus: [
             {
-                status: String,
-                notes: String,
-                completed: {
-                    type: Boolean,
-                    default: false,
+                projectStatusId: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: 'projectStatuses'
                 },
-                active: {
-                    type: Boolean,
-                    default: false,
-                },
-                current: Boolean,
-                createdAt: Date,
-                updatedAt: Date,
             },
         ],
         files: [

@@ -1,19 +1,21 @@
 const mongoose = require('mongoose')
 const ProjectModel = require('../models/projects')
 const StudentModel = require('../models/students')
+const TagModel = require('../models/Tags')
 const ProjectFileModel = require('../models/projectFiles')
 const ProgramTypeModel = require('../models/programType')
+const ProjectStatusModel = require('../models/projectStatuses')
+const Moments = require('moment-timezone')
 require('../models/examiners')
 require('../models/examinerReports')
 
 const io = require('../../socket')
 
 const path = require('path')
-const multer = require('multer')
 let mongo = require('mongodb')
-const { GridFsStorage } = require('multer-gridfs-storage')
+//const { GridFsStorage } = require('multer-gridfs-storage')
 var Grid = require('gridfs-stream')
-const e = require('cors')
+
 require('dotenv').config()
 const mongoUri = process.env.MONGO_R_URL
 const conn = mongoose.createConnection(mongoUri, {
@@ -75,6 +77,16 @@ exports.createProject = async (req, res, next) => {
             throw error
         }
 
+        const findStudent = await StudentModel.findOne({
+            registrationNumber: registrationNumber,
+        })
+
+        if (findStudent) {
+            const error = new Error('Student already exists')
+            error.statusCode = 404
+            throw error
+        }
+
         const student = new StudentModel({
             _id: mongoose.Types.ObjectId(),
             registrationNumber,
@@ -93,79 +105,17 @@ exports.createProject = async (req, res, next) => {
         const project = new ProjectModel({
             _id: mongoose.Types.ObjectId(),
             topic: Topic,
-            activeStatus: 'Appointing Of Supervisors',
-            projectStatus: [
-                {
-                    status: 'Admissions',
-                    notes: `New ${programType} student entry`,
-                    completed: true,
-                },
-                // {
-                //     status: 'Appointing Of Supervisors',
-                //     notes: '',
-                //     active: true,
-                // },
-                {
-                    status: 'Research Approval',
-                    notes: '',
-                    active: true,
-                },
-                {
-                    status: 'Data Collection',
-                    notes: '',
-                    active: false,
-                },
-                {
-                    status: 'Thesis Writing',
-                    notes: '',
-                    active: false,
-                },
-                // {
-                //     status: 'Intention to Submit',
-                //     notes: '',
-                //     active: true,
-                // },
-                {
-                    status: 'Appointing of Examiners',
-                    notes: '',
-                    active: false,
-                },
-                {
-                    status: 'Marking In Progress',
-                    notes: '',
-                    completed: false,
-                },
-                {
-                    status: 'Waiting For Viva Approval',
-                    notes: '',
-                    completed: false,
-                },
-                {
-                    status: 'Waiting For Viva Minutes',
-                    notes: '',
-                    completed: false,
-                },
-                {
-                    status: 'Final Submission',
-                    notes: '',
-                    completed: false,
-                },
-                {
-                    status: 'Waiting For Graduation',
-                    notes: '',
-                    completed: false,
-                },
-                {
-                    status: 'Graduated',
-                    notes: '',
-                    completed: false,
-                },
-            ],
             student: savedStudent._id,
             proposedFee: findProposedFee.programFee,
         })
 
         await project.save()
+
+        //check if Admissions exists in the tags
+
+        //if not then create the tag
+        /** get the Id tag and create the project statuses */
+        /** add the project statuses to the project */
 
         io.getIO().emit('new-student', {
             actions: 'new-student',
@@ -244,7 +194,6 @@ exports.updateProject = async (req, res, next) => {
 
         await findProject.save()
 
-        
         io.getIO().emit('updatestudent', {
             actions: 'update-student',
             data: findProject._id.toString(),
@@ -258,7 +207,452 @@ exports.updateProject = async (req, res, next) => {
     }
 }
 
+/** create status from The project */
+/** create Project status and Tag */
+exports.createProjectStatus = async (req, res, next) => {
+    try {
+        const {
+            tagName,
+            hex,
+            table,
+            rgba,
+            fullColor,
+            projectType,
+            projectId,
+            startAt,
+            expectedEnd,
+        } = req.body
+        const createdDate = Moments(new Date()).tz('Africa/Kampala')
+        const startDate = Moments(new Date(startAt)).tz('Africa/Kampala')
+        const expectedEndDate = Moments(new Date(expectedEnd)).tz(
+            'Africa/Kampala'
+        )
+        const endDates = Moments(new Date()).tz('Africa/Kampala')
+
+        const findProject = await ProjectModel.findById(projectId)
+        if (!findProject) {
+            const error = new Error('Project not found')
+            error.statusCode = 404
+            throw error
+        }
+
+        const newTag = new TagModel({
+            _id: new mongoose.Types.ObjectId(),
+            tagName,
+            table,
+            hex,
+            fullColor,
+            projectType,
+        })
+
+        const savedTag = await newTag.save()
+
+        const newProjectStatus = new ProjectStatusModel({
+            _id: new mongoose.Types.ObjectId(),
+            projectId: projectId,
+            tagId: savedTag._id,
+            status: tagName,
+            createdDate,
+            color: hex,
+            startDate,
+            expectedEndDate,
+        })
+
+        const saveProjectStatus = await newProjectStatus.save()
+
+        /** find the saved active status status */
+        const findActiveStatus = await ProjectStatusModel.findOne({
+            $and: [
+                {
+                    projectId: projectId,
+                },
+                {
+                    active: true,
+                },
+            ],
+        })
+
+        if (!findActiveStatus) {
+            saveProjectStatus.active = true
+            //save the status in project
+            await saveProjectStatus.save()
+
+            findProject.projectStatus = [
+                ...findProject.projectStatus,
+                {
+                    projectStatusId: saveProjectStatus._id,
+                },
+            ]
+
+            await findProject.save()
+
+            res.status(200).json('status added')
+        } else {
+            findActiveStatus.endDate = endDates
+            findActiveStatus.active = false
+
+            await findActiveStatus.save()
+            saveProjectStatus.active = true
+            //save the status in project
+            await saveProjectStatus.save()
+
+            findProject.projectStatus = [
+                ...findProject.projectStatus,
+                {
+                    projectStatusId: saveProjectStatus._id,
+                },
+            ]
+
+            await findProject.save()
+            res.status(200).json('status added')
+        }
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500
+        }
+        next(error)
+    }
+}
+
+/** new project status update */
+exports.updateProjectStatus2 = async (req, res, next) => {
+    try {
+        const {
+            status,
+            statusId,
+            startAt,
+            expectedEnd,
+            endDate,
+            statusEntryType,
+            graduationDate,
+        } = req.body
+        const projectId = req.params.id
+
+        const createdDate = Moments(new Date()).tz('Africa/Kampala')
+        let startDate = null
+        let expectedEndDate = null
+        if (status !== 'Graduated') {
+            startDate = Moments(new Date(startAt)).tz('Africa/Kampala')
+            expectedEndDate = Moments(new Date(expectedEnd)).tz(
+                'Africa/Kampala'
+            )
+        }
+
+        const endDates =
+            statusEntryType === 'old'
+                ? Moments(new Date(endDate)).tz('Africa/Kampala')
+                : Moments(new Date()).tz('Africa/Kampala')
+
+        let graduationDates = null
+
+        const findProject = await ProjectModel.findById(projectId)
+        if (!findProject) {
+            const error = new Error('No project found')
+            error.statusCode = 404
+            throw error
+        }
+
+        //find tag
+        const findTag = await TagModel.findById(statusId)
+        if (!findTag) {
+            const error = new Error('No tag found')
+            error.statusCode = 404
+            throw error
+        }
+
+        if (findTag.tagName === 'Graduated') {
+            graduationDates = Moments(new Date(graduationDate)).tz(
+                'Africa/Kampala'
+            )
+
+            findProject.GraduationDate = graduationDates
+
+            const findProjectStatus = await ProjectStatusModel.findOne({
+                $and: [
+                    {
+                        projectId: projectId,
+                    },
+                    {
+                        tagId: findTag._id,
+                    },
+                ],
+            })
+
+            if (!findProjectStatus) {
+                const newProjectStatus = new ProjectStatusModel({
+                    _id: new mongoose.Types.ObjectId(),
+                    projectId: projectId,
+                    tagId: findTag._id,
+                    status: findTag.tagName,
+                    createdDate,
+                    hex: findTag.hex,
+                    rgba: findTag.rgba,
+                    startDate,
+                    expectedEndDate,
+                    graduationDates,
+                })
+
+                const saveProjectStatus = await newProjectStatus.save()
+
+                /** find the saved active status status */
+                const findActiveStatus = await ProjectStatusModel.findOne({
+                    $and: [
+                        {
+                            projectId: projectId,
+                        },
+                        {
+                            active: true,
+                        },
+                    ],
+                })
+
+                if (!findActiveStatus) {
+                    if (statusEntryType === 'old' && endDate) {
+                        saveProjectStatus.active = true
+                        saveProjectStatus.endDate = endDates
+                        findProject.activeStatus = saveProjectStatus.status
+                    } else {
+                        saveProjectStatus.active = true
+                        findProject.activeStatus = saveProjectStatus.status
+                    }
+
+                    //save the status in project
+                    await saveProjectStatus.save()
+
+                    findProject.projectStatus = [
+                        ...findProject.projectStatus,
+                        {
+                            projectStatusId: saveProjectStatus._id,
+                        },
+                    ]
+
+                    await findProject.save()
+
+                    io.getIO().emit('updatestudent', {
+                        actions: 'update-student',
+                        data: findProject._id.toString(),
+                    })
+
+                    res.status(200).json('status added')
+                } else {
+                    findActiveStatus.endDate = endDates
+                    findActiveStatus.active = false
+
+                    await findActiveStatus.save()
+
+                    if (statusEntryType === 'old' && endDate) {
+                        saveProjectStatus.active = true
+                        saveProjectStatus.endDate = endDates
+                        findProject.activeStatus = saveProjectStatus.status
+                    } else {
+                        saveProjectStatus.active = true
+                        findProject.activeStatus = saveProjectStatus.status
+                    }
+
+                    //save the status in project
+                    await saveProjectStatus.save()
+
+                    findProject.projectStatus = [
+                        ...findProject.projectStatus,
+                        {
+                            projectStatusId: saveProjectStatus._id,
+                        },
+                    ]
+
+                    await findProject.save()
+
+                    io.getIO().emit('updatestudent', {
+                        actions: 'update-student',
+                        data: findProject._id.toString(),
+                    })
+                    res.status(200).json('status added')
+                }
+            } else {
+                //tag for graduation already exists
+                findProjectStatus.graduationDates = graduationDates
+                const savedProjectStatuses = await findProjectStatus.save()
+
+                /** find the saved active status status */
+                const findActiveStatus = await ProjectStatusModel.findOne({
+                    $and: [
+                        {
+                            projectId: projectId,
+                        },
+                        {
+                            active: true,
+                        },
+                    ],
+                })
+
+                if (!findActiveStatus) {
+                    if (statusEntryType === 'old' && endDate) {
+                        savedProjectStatuses.active = true
+
+                        findProject.activeStatus = savedProjectStatuses.status
+                    } else {
+                        savedProjectStatuses.active = true
+                        findProject.activeStatus = savedProjectStatuses.status
+                    }
+
+                    //save the status in project
+                    await savedProjectStatuses.save()
+
+                    await findProject.save()
+
+                    io.getIO().emit('updatestudent', {
+                        actions: 'update-student',
+                        data: findProject._id.toString(),
+                    })
+
+                    res.status(200).json('status updated')
+                } else if (
+                    findActiveStatus &&
+                    findActiveStatus.status !== 'Graduated'
+                ) {
+                    findActiveStatus.endDate = endDates
+                    findActiveStatus.active = false
+
+                    await findActiveStatus.save()
+
+                    if (statusEntryType === 'old' && endDate) {
+                        savedProjectStatuses.active = true
+
+                        findProject.activeStatus = savedProjectStatuses.status
+                    } else {
+                        savedProjectStatuses.active = true
+                        findProject.activeStatus = savedProjectStatuses.status
+                    }
+
+                    //save the status in project
+                    await savedProjectStatuses.save()
+
+                    await findProject.save()
+
+                    io.getIO().emit('updatestudent', {
+                        actions: 'update-student',
+                        data: findProject._id.toString(),
+                    })
+                    res.status(200).json('status updated')
+                } else if (
+                    findActiveStatus &&
+                    findActiveStatus.status === 'Graduated'
+                ) {
+                    savedProjectStatuses.active = true
+
+                    findProject.activeStatus = savedProjectStatuses.status
+
+                    //save the status in project
+                    await savedProjectStatuses.save()
+
+                    await findProject.save()
+
+                    io.getIO().emit('updatestudent', {
+                        actions: 'update-student',
+                        data: findProject._id.toString(),
+                    })
+                    res.status(200).json('status updated')
+                }
+            }
+        } else {
+            const newProjectStatus = new ProjectStatusModel({
+                _id: new mongoose.Types.ObjectId(),
+                projectId: projectId,
+                tagId: findTag._id,
+                status: findTag.tagName,
+                createdDate,
+                hex: findTag.hex,
+                rgba: findTag.rgba,
+                startDate,
+                expectedEndDate,
+                graduationDates,
+            })
+
+            const saveProjectStatus = await newProjectStatus.save()
+
+            /** find the saved active status status */
+            const findActiveStatus = await ProjectStatusModel.findOne({
+                $and: [
+                    {
+                        projectId: projectId,
+                    },
+                    {
+                        active: true,
+                    },
+                ],
+            })
+
+            if (!findActiveStatus) {
+                if (statusEntryType === 'old' && endDate) {
+                    saveProjectStatus.active = true
+                    saveProjectStatus.endDate = endDates
+                    findProject.activeStatus = saveProjectStatus.status
+                } else {
+                    saveProjectStatus.active = true
+                    findProject.activeStatus = saveProjectStatus.status
+                }
+
+                //save the status in project
+                await saveProjectStatus.save()
+
+                findProject.projectStatus = [
+                    ...findProject.projectStatus,
+                    {
+                        projectStatusId: saveProjectStatus._id,
+                    },
+                ]
+
+                await findProject.save()
+
+                io.getIO().emit('updatestudent', {
+                    actions: 'update-student',
+                    data: findProject._id.toString(),
+                })
+
+                res.status(200).json('status added')
+            } else {
+                findActiveStatus.endDate = endDates
+                findActiveStatus.active = false
+
+                await findActiveStatus.save()
+
+                if (statusEntryType === 'old' && endDate) {
+                    saveProjectStatus.active = true
+                    saveProjectStatus.endDate = endDates
+                    findProject.activeStatus = saveProjectStatus.status
+                } else {
+                    saveProjectStatus.active = true
+                    findProject.activeStatus = saveProjectStatus.status
+                }
+
+                //save the status in project
+                await saveProjectStatus.save()
+
+                findProject.projectStatus = [
+                    ...findProject.projectStatus,
+                    {
+                        projectStatusId: saveProjectStatus._id,
+                    },
+                ]
+
+                await findProject.save()
+
+                io.getIO().emit('updatestudent', {
+                    actions: 'update-student',
+                    data: findProject._id.toString(),
+                })
+                res.status(200).json('status added')
+            }
+        }
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500
+        }
+        next(error)
+    }
+}
+
 /** update Project Status */
+/** nolonger in use */
 exports.updateProjectStatus = async (req, res, next) => {
     try {
         const { status, notes } = req.body
@@ -408,7 +802,7 @@ exports.getPaginatedProjects = async (req, res, next) => {
             .skip((currentPage - 1) * perPages)
             .limit(perPages)
             .populate(
-                'student examiners.examinerId examiners.projectAppointmentLetter examinerReports.reportId files.fileId opponents.opponentId opponentReports.reportId opponents.projectAppointmentLetter FinalSubmissionFiles.fileId supervisor.supervisorId doctoralmembers.doctoralmemberId registration.registrationId'
+                'student examiners.examinerId examiners.projectAppointmentLetter examinerReports.reportId files.fileId opponents.opponentId opponentReports.reportId opponents.projectAppointmentLetter FinalSubmissionFiles.fileId supervisor.supervisorId doctoralmembers.doctoralmemberId registration.registrationId projectStatus.projectStatusId'
             )
 
         let current_total = await ProjectModel.find()
@@ -439,7 +833,7 @@ exports.getAllProjects = async (req, res, next) => {
         let getProjects = await ProjectModel.find()
             .sort({ createdAt: -1 })
             .populate(
-                'student examiners.examinerId examiners.projectAppointmentLetter examinerReports.reportId files.fileId opponents.opponentId opponentReports.reportId opponents.projectAppointmentLetter FinalSubmissionFiles.fileId supervisor.supervisorId doctoralmembers.doctoralmemberId registration.registrationId'
+                'student examiners.examinerId examiners.projectAppointmentLetter examinerReports.reportId files.fileId opponents.opponentId opponentReports.reportId opponents.projectAppointmentLetter FinalSubmissionFiles.fileId supervisor.supervisorId doctoralmembers.doctoralmemberId registration.registrationId projectStatus.projectStatusId'
             )
         res.status(200).json({
             items: getProjects,
@@ -458,7 +852,7 @@ exports.getIndividualProjects = async (req, res, next) => {
     try {
         const id = req.params.id
         let getProject = await ProjectModel.findById(id).populate(
-            'student examiners.examinerId examiners.projectAppointmentLetter examinerReports.reportId files.fileId vivaFiles.fileId opponents.opponentId opponentReports.reportId opponents.projectAppointmentLetter FinalSubmissionFiles.fileId supervisor.supervisorId doctoralmembers.doctoralmemberId registration.registrationId'
+            'student examiners.examinerId examiners.projectAppointmentLetter examinerReports.reportId files.fileId vivaFiles.fileId opponents.opponentId opponentReports.reportId opponents.projectAppointmentLetter FinalSubmissionFiles.fileId supervisor.supervisorId doctoralmembers.doctoralmemberId registration.registrationId projectStatus.projectStatusId'
         )
         // console.log(getProject)
 

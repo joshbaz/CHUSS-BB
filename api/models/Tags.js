@@ -23,6 +23,9 @@ const TagsSchema = mongoose.Schema(
             type: String,
             required: true,
         },
+        projectType: {
+            type: String,
+        },
     },
     { timestamps: true }
 )

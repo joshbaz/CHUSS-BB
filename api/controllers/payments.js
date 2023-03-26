@@ -56,7 +56,7 @@ exports.getAllPayments = async (req, res, next) => {
         const getPayments = await PayModel.find().populate(
             'examiner project report student opponent'
         )
-        console.log('payments', getPayments)
+       // console.log('payments', getPayments)
 
         res.status(200).json({ items: getPayments })
     } catch (error) {
@@ -71,14 +71,14 @@ exports.getAllPayments = async (req, res, next) => {
 exports.getPaginatedPayments = async (req, res, next) => {
     try {
         const { perPage, page } = req.params
-        console.log('here', perPage, page)
+       // console.log('here', perPage, page)
         let currentPage
 
         if (page === 'undefined') {
-            console.log('here22', perPage, page)
+           // console.log('here22', perPage, page)
             currentPage = 1
         } else {
-            console.log('here225555', perPage, page)
+           // console.log('here225555', perPage, page)
             currentPage = page
         }
 

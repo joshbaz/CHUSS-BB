@@ -4,7 +4,7 @@ const AdminModel = require('../models/administrator')
 
 module.exports = (req, res, next) => {
     const authHeader = req.get('Authorization')
-    console.log(authHeader, 'header')
+    //console.log(authHeader, 'header')
     if (!authHeader) {
         const error = new Error('Not authenticated')
         error.statusCode = 401

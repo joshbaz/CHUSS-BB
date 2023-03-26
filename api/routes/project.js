@@ -103,12 +103,26 @@ router.patch(
     uploadMiddleware,
     projectController.updateProject
 )
+
+/** project create */
+router.put(
+    '/vl/status/create',
+    isAuth,
+    projectController.createProjectStatus
+)
+
 /** project status update */
 router.put(
     '/vl/status/update/:id',
     isAuth,
-    projectController.updateProjectStatus
+    projectController.updateProjectStatus2
 )
+/** project status update */
+// router.put(
+//     '/vl/status/update/:id',
+//     isAuth,
+//     projectController.updateProjectStatus
+// )
 
 router.get('/vl/pprojects', isAuth, projectController.getPaginatedProjects)
 

@@ -1,10 +1,11 @@
 const mongoose = require('mongoose')
 const TagModel = require('../models/Tags')
+const io = require('../../socket')
 
 /** create tag */
 exports.createTag = async (req, res, next) => {
     try {
-        const { tagName, hex, rgba, fullColor, table } = req.body
+        const { tagName, hex, rgba, fullColor, table, projectType } = req.body
 
         let fullColors = `${fullColor}`
 
@@ -15,9 +16,14 @@ exports.createTag = async (req, res, next) => {
             hex,
             rgba,
             fullColor: fullColors,
+            projectType,
         })
 
         await newtag.save()
+
+        io.getIO().emit('updatetag', {
+            actions: 'update-tag',
+        })
 
         res.status(201).json(`tag - ${tagName} created`)
     } catch (error) {
