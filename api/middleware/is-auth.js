@@ -39,11 +39,14 @@ module.exports = (req, res, next) => {
 
             next()
         } catch (error) {
-            err.statusCode = 500
-            throw err
+            error.statusCode = 500
+            throw error
         }
     }
 
     runCheck()
     //next()
 }
+
+//check this
+//connect ECONNREFUSED

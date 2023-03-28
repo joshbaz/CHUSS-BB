@@ -3,6 +3,8 @@ const cors = require('cors')
 const mongoose = require('mongoose')
 const socketio = require('socket.io')
 const bodyparser = require('body-parser')
+const jwt = require('jsonwebtoken')
+const AdminModel = require('./api/models/administrator')
 
 const app = express()
 
@@ -20,9 +22,9 @@ const opponentRoutes = require('./api/routes/opponent')
 const opponentReportRoutes = require('./api/routes/opponentReports')
 const supervisorRoutes = require('./api/routes/supervisors')
 const doctoralMemberRoutes = require('./api/routes/doctoralmembers')
-const schoolRoutes = require('./api/routes/schools');
+const schoolRoutes = require('./api/routes/schools')
 const departmentRoutes = require('./api/routes/schoolDepartments')
-const registrationRoutes = require('./api/routes/registration');
+const registrationRoutes = require('./api/routes/registration')
 //apply middleware
 app.use(cors())
 app.use(bodyparser.json())
@@ -107,10 +109,38 @@ mongoose
             //       },
             //   })
 
-            io.on('connection', (socket) => {
+            io.on('connection', async (socket) => {
                 console.log('client connected')
-                socket.on('disconnect', () => {
+                //  console.log('client connected', socket.handshake.auth.token)
+                let token = socket.handshake.auth.token
+                let decodedToken = token
+                    ? jwt.verify(token, process.env.SECRET)
+                    : null
+
+                if (decodedToken) {
+                    const findAdmin = await AdminModel.findById(
+                        decodedToken.userId
+                    )
+                    if (findAdmin) {
+                        findAdmin.status = 'online'
+                        await findAdmin.save()
+                    }
+                } else {
+                }
+
+                socket.on('disconnect', async () => {
                     console.log('user disconnected')
+
+                    if (decodedToken) {
+                        const findAdmin = await AdminModel.findById(
+                            decodedToken.userId
+                        )
+                        if (findAdmin) {
+                            findAdmin.status = 'offline'
+                            await findAdmin.save()
+                        }
+                    } else {
+                    }
                 })
             })
         } else {

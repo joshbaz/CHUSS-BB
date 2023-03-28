@@ -31,4 +31,14 @@ router.post(
 
 router.post('/v1/login', adminController.loginUser)
 
+router.patch('/v1/update/:id', isAuth, adminController.updateAdmin)
+
+router.get('/v1/users', isAuth, adminController.getAllFacilitators)
+
+router.get('/v1/activities', isAuth, adminController.getActivities)
+
+router.patch('/v1/resetpassword/:id', isAuth, adminController.resetPassword)
+
+router.patch('/v1/newpasskey/update', adminController.newfacilitatorPassword)
+
 module.exports = router
