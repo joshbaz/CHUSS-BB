@@ -28,6 +28,10 @@ const projectStatusSchema = mongoose.Schema(
             type: Boolean,
             default: false,
         },
+         entryType: {
+            type: String,
+            default: 'new entry',
+        },
     },
     { timestamps: true }
 )

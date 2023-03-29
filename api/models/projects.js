@@ -18,7 +18,7 @@ const projectSchema = mongoose.Schema(
             {
                 projectStatusId: {
                     type: mongoose.Schema.Types.ObjectId,
-                    ref: 'projectStatuses'
+                    ref: 'projectStatuses',
                 },
             },
         ],
@@ -143,6 +143,13 @@ const projectSchema = mongoose.Schema(
         },
         GraduationDate: {
             type: String,
+        },
+        createdDate: {
+            type: Date,
+        },
+        entryType: {
+            type: String,
+            default: 'new entry',
         },
     },
     { timestamps: true }

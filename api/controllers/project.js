@@ -62,6 +62,8 @@ exports.createProject = async (req, res, next) => {
             email,
             phoneNumber,
             alternativeEmail,
+            entryType,
+            createdDate,
         } = req.body
 
         // console.log('all project files', req.files)
@@ -102,11 +104,18 @@ exports.createProject = async (req, res, next) => {
 
         const savedStudent = await student.save()
 
+        const createdDates =
+            entryType === 'old entry' && createdDate
+                ? Moments(new Date(createdDate)).tz('Africa/Kampala')
+                : Moments(new Date()).tz('Africa/Kampala')
+
         const project = new ProjectModel({
             _id: mongoose.Types.ObjectId(),
             topic: Topic,
             student: savedStudent._id,
             proposedFee: findProposedFee.programFee,
+            createdDate: createdDates,
+            entryType: entryType,
         })
 
         await project.save()
@@ -339,7 +348,7 @@ exports.updateProjectStatus2 = async (req, res, next) => {
         }
 
         const endDates =
-            statusEntryType === 'old'
+            statusEntryType === 'old entry'
                 ? Moments(new Date(endDate)).tz('Africa/Kampala')
                 : Moments(new Date()).tz('Africa/Kampala')
 
@@ -407,9 +416,10 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                 })
 
                 if (!findActiveStatus) {
-                    if (statusEntryType === 'old' && endDate) {
+                    if (statusEntryType === 'old entry' && endDate) {
                         saveProjectStatus.active = true
                         saveProjectStatus.endDate = endDates
+                        saveProjectStatus.entryType = 'old entry'
                         findProject.activeStatus = saveProjectStatus.status
                     } else {
                         saveProjectStatus.active = true
@@ -440,9 +450,10 @@ exports.updateProjectStatus2 = async (req, res, next) => {
 
                     await findActiveStatus.save()
 
-                    if (statusEntryType === 'old' && endDate) {
+                    if (statusEntryType === 'old entry' && endDate) {
                         saveProjectStatus.active = true
                         saveProjectStatus.endDate = endDates
+                        saveProjectStatus.entryType = 'old entry'
                         findProject.activeStatus = saveProjectStatus.status
                     } else {
                         saveProjectStatus.active = true
@@ -485,9 +496,9 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                 })
 
                 if (!findActiveStatus) {
-                    if (statusEntryType === 'old' && endDate) {
+                    if (statusEntryType === 'old entry' && endDate) {
                         savedProjectStatuses.active = true
-
+                        savedProjectStatuses.entryType = 'old entry'
                         findProject.activeStatus = savedProjectStatuses.status
                     } else {
                         savedProjectStatuses.active = true
@@ -514,9 +525,9 @@ exports.updateProjectStatus2 = async (req, res, next) => {
 
                     await findActiveStatus.save()
 
-                    if (statusEntryType === 'old' && endDate) {
+                    if (statusEntryType === 'old entry' && endDate) {
                         savedProjectStatuses.active = true
-
+                        savedProjectStatuses.entryType = 'old entry'
                         findProject.activeStatus = savedProjectStatuses.status
                     } else {
                         savedProjectStatuses.active = true
@@ -582,9 +593,10 @@ exports.updateProjectStatus2 = async (req, res, next) => {
             })
 
             if (!findActiveStatus) {
-                if (statusEntryType === 'old' && endDate) {
+                if (statusEntryType === 'old entry' && endDate) {
                     saveProjectStatus.active = true
                     saveProjectStatus.endDate = endDates
+                    saveProjectStatus.entryType = 'old entry'
                     findProject.activeStatus = saveProjectStatus.status
                 } else {
                     saveProjectStatus.active = true
@@ -615,9 +627,10 @@ exports.updateProjectStatus2 = async (req, res, next) => {
 
                 await findActiveStatus.save()
 
-                if (statusEntryType === 'old' && endDate) {
+                if (statusEntryType === 'old entry' && endDate) {
                     saveProjectStatus.active = true
                     saveProjectStatus.endDate = endDates
+                    saveProjectStatus.entryType = 'old entry'
                     findProject.activeStatus = saveProjectStatus.status
                 } else {
                     saveProjectStatus.active = true

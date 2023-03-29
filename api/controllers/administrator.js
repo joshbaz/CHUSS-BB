@@ -151,9 +151,9 @@ exports.getActivities = async (req, res, next) => {
             throw error
         }
 
-        const findAllActivities = await LoginActivityModel.find().populate(
-            'adminId'
-        )
+        const findAllActivities = await LoginActivityModel.find()
+            .populate('adminId')
+            .sort({ createdAt: -1 })
         res.status(200).json({
             items: findAllActivities,
         })
@@ -177,12 +177,12 @@ exports.getAllFacilitators = async (req, res, next) => {
             error.statusCode = 404
             throw error
         }
-        console.log('heresss')
+        // console.log('heresss')
         const findAllAdmins = await AdminModel.find({
             _id: { $ne: req.userId },
-        })
+        }).sort({ createdAt: -1 })
 
-        console.log('heresss')
+        // console.log('heresss')
 
         res.status(200).json({
             items: findAllAdmins,
