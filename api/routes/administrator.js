@@ -8,7 +8,7 @@ const isAuth = require('../middleware/is-auth')
 
 router.post(
     '/v1/create',
-    isAuth,
+   
     [
         body('email')
             .isEmail()
