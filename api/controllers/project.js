@@ -329,19 +329,19 @@ exports.updateProjectStatus2 = async (req, res, next) => {
         const {
             status,
             statusId,
-            startAt,
+            startDate,
             expectedEnd,
             endDate,
             statusEntryType,
-            graduationDate,
+            dateOfGraduation,
         } = req.body
         const projectId = req.params.id
 
         const createdDate = Moments(new Date()).tz('Africa/Kampala')
-        let startDate = null
+        let startDates = null
         let expectedEndDate = null
         if (status !== 'Graduated') {
-            startDate = Moments(new Date(startAt)).tz('Africa/Kampala')
+            startDates = Moments(new Date(startDate)).tz('Africa/Kampala')
             expectedEndDate = Moments(new Date(expectedEnd)).tz(
                 'Africa/Kampala'
             )
@@ -370,7 +370,7 @@ exports.updateProjectStatus2 = async (req, res, next) => {
         }
 
         if (findTag.tagName === 'Graduated') {
-            graduationDates = Moments(new Date(graduationDate)).tz(
+            graduationDates = Moments(new Date(dateOfGraduation)).tz(
                 'Africa/Kampala'
             )
 
@@ -396,7 +396,7 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                     createdDate,
                     hex: findTag.hex,
                     rgba: findTag.rgba,
-                    startDate,
+                    startDate: startDates,
                     expectedEndDate,
                     graduationDates,
                 })
@@ -573,7 +573,7 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                 createdDate,
                 hex: findTag.hex,
                 rgba: findTag.rgba,
-                startDate,
+                startDate: startDates,
                 expectedEndDate,
                 graduationDates,
             })
@@ -1400,9 +1400,9 @@ exports.updateResubmission = async (req, res, next) => {
     try {
         const projectId = req.params.id
         const { submissionStatus } = req.body
-        const status =
-            submissionStatus === 'resubmission' ? 'Looking For Examinar' : ''
-        const notes = 'resubmission'
+        // const status =
+        //     submissionStatus === 'resubmission' ? 'Looking For Examinar' : ''
+        // const notes = 'resubmission'
         const findProject = await ProjectModel.findById(projectId)
         if (!findProject) {
             const error = new Error('No project found')
@@ -1414,103 +1414,13 @@ exports.updateResubmission = async (req, res, next) => {
         await findProject.save()
 
         if (submissionStatus === 'resubmission') {
-            let newDataArray = [...findProject.projectStatus]
-            findProject.activeStatus = status
-
-            for (
-                let iteration = 0;
-                iteration < newDataArray.length;
-                iteration++
-            ) {
-                let alliteration = iteration + 1
-
-                if (newDataArray[iteration].active === true) {
-                    if (
-                        newDataArray[iteration].status.toLowerCase() !==
-                        status.toLowerCase()
-                    ) {
-                        newDataArray[iteration].active = false
-                        newDataArray[iteration].completed = true
-
-                        // findProject.projectStatus = [
-                        //     ...newDataArray,
-                        //     {
-                        //         status: status,
-                        //         notes: notes,
-                        //         active: true,
-                        //     },
-                        // ]
-
-                        // await findProject.save()
-                        // return res.status(200).json('status 3 updated')
-                    } else {
-                        newDataArray[iteration].notes = notes
-
-                        findProject.projectStatus = [...newDataArray]
-                        await findProject.save()
-                        io.getIO().emit('updatestudent', {
-                            actions: 'update-student',
-                            data: findProject._id.toString(),
-                        })
-                        return res.status(201).json('submission status changed')
-                    }
-                }
-
-                if (
-                    newDataArray[iteration].status.toLowerCase() ===
-                    status.toLowerCase()
-                ) {
-                    newDataArray[iteration].active = true
-                    newDataArray[iteration].completed = false
-
-                    let removedArray = newDataArray.splice(iteration + 1)
-                    if (removedArray.length > 0) {
-                        let filteredArray = removedArray.filter((data) => {
-                            data.completed = false
-                            data.active = false
-                            return data
-                        })
-
-                        findProject.projectStatus = [
-                            ...newDataArray,
-                            ...filteredArray,
-                        ]
-                        await findProject.save()
-                        io.getIO().emit('updatestudent', {
-                            actions: 'update-student',
-                            data: findProject._id.toString(),
-                        })
-                        return res.status(201).json('submission status changed')
-                    } else {
-                        findProject.projectStatus = [...newDataArray]
-                        await findProject.save()
-                        return
-                    }
-                }
-
-                if (
-                    alliteration === newDataArray.length &&
-                    newDataArray[iteration].status.toLowerCase() !==
-                        status.toLowerCase()
-                ) {
-                    findProject.projectStatus = [
-                        ...newDataArray,
-                        {
-                            status: status,
-                            notes: notes,
-                            active: true,
-                        },
-                    ]
-
-                    await findProject.save()
-                    io.getIO().emit('updatestudent', {
-                        actions: 'update-student',
-                        data: findProject._id.toString(),
-                    })
-                    res.status(201).json('submission status changed')
-                    return
-                }
-            }
+            // let newDataArray = [...findProject.projectStatus]
+            // findProject.activeStatus = status
+            io.getIO().emit('updatestudent', {
+                actions: 'update-student',
+                data: findProject._id.toString(),
+            })
+            res.status(201).json('submission status changed')
             //res.status(201).json('submission status changed')
         } else {
             io.getIO().emit('updatestudent', {
