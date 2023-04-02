@@ -86,6 +86,12 @@ exports.loginUser = async (req, res, next) => {
             throw error
         }
 
+        if (findOneUser.deactivated) {
+            const error = new Error('User deactivated')
+            error.statusCode = 404
+            throw error
+        }
+
         //compare password
         const comparePassword = await bcrypt.compare(
             password,
@@ -329,6 +335,52 @@ exports.newfacilitatorPassword = async (req, res, next) => {
             data: findAdmin._id,
         })
         res.status(200).json('password successfully changed')
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500
+        }
+        next(error)
+    }
+}
+
+//deactivate admin
+//update faciliator
+
+exports.deactivateAdmin = async (req, res, next) => {
+    try {
+        const findOneUser = await AdminModel.findOne({
+            $and: [{ _id: req.userId }, { privileges: 'Super Administrator' }],
+        })
+
+        if (!findOneUser) {
+            const error = new Error('Forbidden to Access Data')
+            error.statusCode = 404
+            throw error
+        }
+
+        const { deactivate } = req.body
+
+        const userId = req.params.id
+
+        const findAdmin = await AdminModel.findById(userId)
+
+        if (!findAdmin) {
+            const error = new Error('administrator cannot be found')
+            error.statusCode = 404
+            throw error
+        }
+
+        findAdmin.deactivated = !findAdmin.deactivated
+
+        await findAdmin.save()
+
+        io.getIO().emit('updatedAdmin', {
+            actions: 'update-admin',
+            data: findAdmin._id,
+        })
+        res.status(201).json(
+            `administrator with email ${findAdmin.email} updated`
+        )
     } catch (error) {
         if (!error.statusCode) {
             error.statusCode = 500

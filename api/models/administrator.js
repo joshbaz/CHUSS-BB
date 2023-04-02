@@ -20,11 +20,11 @@ const adminSchema = mongoose.Schema(
             default: false,
             required: true,
         },
-        deactivated: [
-            {
-                type: String,
-            },
-        ],
+        deactivated: {
+            type: Boolean,
+            default: false,
+        },
+
         status: {
             type: String,
             default: 'offline',

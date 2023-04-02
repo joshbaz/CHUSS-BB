@@ -40,4 +40,6 @@ router.patch('/v1/resetpassword/:id', isAuth, adminController.resetPassword)
 
 router.patch('/v1/newpasskey/update', adminController.newfacilitatorPassword)
 
+router.patch('/v1/deactivate/:id', isAuth, adminController.deactivateAdmin)
+
 module.exports = router

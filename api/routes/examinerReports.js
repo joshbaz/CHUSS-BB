@@ -103,4 +103,11 @@ router.delete(
     isAuth,
     examinerReport.removeExaminerReportFile
 )
+
+/** reports stats */
+router.get('/v1/stats', isAuth, examinerReport.reportStatistics)
+
+router.get('/v1/reminders', isAuth, examinerReport.getReportReminders)
+
+router.get('/v1/late', isAuth, examinerReport.getLateReport)
 module.exports = router

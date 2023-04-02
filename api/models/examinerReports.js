@@ -24,10 +24,10 @@ const examinerReportSchema = mongoose.Schema(
         reportStatus: String,
         marked: { type: Boolean, default: false },
         creationDate: {
-            type: String,
+            type: Date,
         },
         submissionDate: {
-            type: String,
+            type: Date,
         },
         reportFiles: [
             {

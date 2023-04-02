@@ -31,7 +31,7 @@ conn.once('open', () => {
 exports.updateExaminerReport = async (req, res, next) => {
     try {
         const reportId = req.params.rid
-      //  console.log(req.file, 'req.files', 'trying it')
+        //  console.log(req.file, 'req.files', 'trying it')
 
         const { score, remarks, ungraded } = req.body
 
@@ -249,10 +249,10 @@ exports.removeExaminerReportFile = async (req, res, next) => {
                         return next(err)
                     }
 
-                  //  console.log('file chunks deletion registration')
+                    //  console.log('file chunks deletion registration')
 
                     await ReportFileModel.findByIdAndDelete(findMainFile._id)
-                //    console.log('registration finally deleted registration')
+                    //    console.log('registration finally deleted registration')
 
                     io.getIO().emit('updatestudent', {
                         actions: 'update-student',
@@ -270,19 +270,156 @@ exports.removeExaminerReportFile = async (req, res, next) => {
             }
         } else {
             await ReportFileModel.findByIdAndDelete(findMainFile._id)
-          //  console.log('not allowed registration finally deleted registration')
+            //  console.log('not allowed registration finally deleted registration')
 
-           io.getIO().emit('updatestudent', {
-               actions: 'update-student',
-               data: findReports.projectId.toString(),
-           })
+            io.getIO().emit('updatestudent', {
+                actions: 'update-student',
+                data: findReports.projectId.toString(),
+            })
 
-           io.getIO().emit('updatereport', {
-               actions: 'update-report',
-               data: findReports._id.toString(),
-           })
+            io.getIO().emit('updatereport', {
+                actions: 'update-report',
+                data: findReports._id.toString(),
+            })
             res.status(200).json(`Filev has been deleted`)
         }
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500
+        }
+        next(error)
+    }
+}
+
+/** report statistics */
+exports.reportStatistics = async (req, res, next) => {
+    try {
+        let currentDate = Moments(new Date())
+        const findAllReports = await ExaminerReportModel.find().countDocuments()
+
+        const findReports = await ExaminerReportModel.find({
+            $and: [
+                {
+                    marked: false,
+                },
+            ],
+        })
+            .sort({ createdAt: -1 })
+            .populate('examiner reportFiles.files projectId')
+
+        //Reminder stats
+        const newMappedData = findReports.filter((data, index) => {
+            let pastDate = data.creationDate
+                ? Moments(data.creationDate)
+                : Moments(new Date())
+            let days20 = data.creationDate
+                ? currentDate.diff(pastDate, 'days')
+                : 0
+            if (days20 >= 20 && days20 <= 35) {
+                return data
+            }
+        })
+
+        //late stats
+        const newMappedData2 = findReports.filter((data, index) => {
+            let pastDate = data.creationDate
+                ? Moments(data.creationDate)
+                : Moments(new Date())
+            let days20 = data.creationDate
+                ? currentDate.diff(pastDate, 'days')
+                : 0
+            if (days20 > 30) {
+                return data
+            }
+        })
+
+        res.status(200).json({
+            allreports: findAllReports,
+            allreminders: newMappedData.length,
+            latereports: newMappedData2.length,
+        })
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500
+        }
+        next(error)
+    }
+}
+
+//new structure
+/** get reminders */
+exports.getReportReminders = async (req, res, next) => {
+    try {
+        let currentDate = Moments(new Date())
+
+        const findReports = await ExaminerReportModel.find({
+            $and: [
+                {
+                    marked: false,
+                },
+            ],
+        })
+            .sort({ createdAt: -1 })
+            .populate('examiner reportFiles.files projectId')
+
+          
+
+        //filter data
+        const newMappedData = findReports.filter((data, index) => {
+            let pastDate = data.creationDate
+                ? Moments(data.creationDate)
+                : Moments(new Date())
+            let days20 = data.creationDate
+                ? currentDate.diff(pastDate, 'days')
+                : 0
+            if (days20 >= 20 && days20 <= 35) {
+                return data
+            }
+        })
+
+        res.status(200).json({
+            items: newMappedData,
+        })
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500
+        }
+        next(error)
+    }
+}
+
+/** late reports */
+
+exports.getLateReport = async (req, res, next) => {
+    try {
+        let currentDate = Moments(new Date())
+
+        const findReports = await ExaminerReportModel.find({
+            $and: [
+                {
+                    marked: false,
+                },
+            ],
+        })
+            .sort({ createdAt: -1 })
+            .populate('examiner reportFiles.files projectId')
+
+        //filter data
+        const newMappedData = findReports.filter((data, index) => {
+            let pastDate = data.creationDate
+                ? Moments(data.creationDate)
+                : Moments(new Date())
+            let days20 = data.creationDate
+                ? currentDate.diff(pastDate, 'days')
+                : 0
+            if (days20 > 30) {
+                return data
+            }
+        })
+
+        res.status(200).json({
+            items: newMappedData,
+        })
     } catch (error) {
         if (!error.statusCode) {
             error.statusCode = 500

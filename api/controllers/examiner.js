@@ -254,7 +254,7 @@ exports.assignExaminer = async (req, res, next) => {
             throw error
         }
 
-        const creationDate = Moments().tz('Africa/Kampala').format()
+        const creationDate = Moments().tz('Africa/Kampala')
 
         // await items.map(async (element) => {
         //     /** find if the examiner is there */
