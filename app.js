@@ -114,7 +114,9 @@ mongoose
                 //  console.log('client connected', socket.handshake.auth.token)
                 let token = socket.handshake.auth.token
                 let decodedToken = token
-                    ? jwt.verify(token, process.env.SECRET)
+                    ? jwt.verify(token, process.env.SECRET, {
+                          ignoreExpiration: true,
+                      })
                     : null
 
                 if (decodedToken) {

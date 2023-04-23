@@ -9,16 +9,23 @@ router.post(
     doctoralController.createProjectDMember
 )
 
+/** migrate supervisor to member */
+router.post(
+    '/v1/project/migrate/:pid/:sid',
+    isAuth,
+    doctoralController.migrateSupervisorToMember
+)
+
 router.post('/v1/project/assign/:pid', 
 isAuth, 
 doctoralController.assignMember)
 
-/** get all supervisors */
+/** get all members */
 router.get('/v1/getall', 
 isAuth, 
 doctoralController.getAllMembers)
 
-/** get individual supervisors */
+/** get individual members */
 router.get(
     '/v1/individual/:id',
     isAuth,

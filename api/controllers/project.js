@@ -64,6 +64,7 @@ exports.createProject = async (req, res, next) => {
             alternativeEmail,
             entryType,
             createdDate,
+            fundingType,
         } = req.body
 
         // console.log('all project files', req.files)
@@ -100,6 +101,7 @@ exports.createProject = async (req, res, next) => {
             phoneNumber,
             email,
             alternative_email: alternativeEmail,
+            fundingType,
         })
 
         const savedStudent = await student.save()
@@ -157,6 +159,7 @@ exports.updateProject = async (req, res, next) => {
 
             semesterRegistration,
             academicYear,
+            fundingType,
         } = req.body
 
         const findProposedFee = await ProgramTypeModel.findOne({
@@ -186,6 +189,7 @@ exports.updateProject = async (req, res, next) => {
         //change student
         findStudent.registrationNumber = registrationNumber
         findStudent.studentName = studentName
+        findStudent.fundingType = fundingType
         findStudent.graduate_program_type = programType
         findStudent.degree_program = degreeProgram
         findStudent.semester = semesterRegistration

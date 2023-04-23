@@ -4,6 +4,7 @@ const AdminModel = require('../models/administrator')
 
 module.exports = (req, res, next) => {
     const authHeader = req.get('Authorization')
+    let { TokenExpiredError } = jwt
     //console.log(authHeader, 'header')
     if (!authHeader) {
         const error = new Error('Not authenticated')

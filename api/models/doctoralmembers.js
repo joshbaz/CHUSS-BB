@@ -10,6 +10,7 @@ const doctoralmemberSchema = mongoose.Schema(
         postalAddress: String,
         countryOfResidence: String,
         placeOfWork: String,
+        studentsNo: Number,
         typeOfExaminer: {
             type: String,
             default: 'doctoral committee members',

@@ -17,6 +17,7 @@ const studentSchema = mongoose.Schema(
         phoneNumber: String,
         email: String,
         alternative_email: String,
+        fundingType: String,
     },
     { timestamp: true }
 )

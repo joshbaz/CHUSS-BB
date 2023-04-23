@@ -315,7 +315,7 @@ exports.reportStatistics = async (req, res, next) => {
             let days20 = data.creationDate
                 ? currentDate.diff(pastDate, 'days')
                 : 0
-            if (days20 >= 20 && days20 <= 35) {
+            if (days20 >= 60 && days20 <= 89) {
                 return data
             }
         })
@@ -328,7 +328,7 @@ exports.reportStatistics = async (req, res, next) => {
             let days20 = data.creationDate
                 ? currentDate.diff(pastDate, 'days')
                 : 0
-            if (days20 > 30) {
+            if (days20 > 90) {
                 return data
             }
         })
@@ -372,7 +372,7 @@ exports.getReportReminders = async (req, res, next) => {
             let days20 = data.creationDate
                 ? currentDate.diff(pastDate, 'days')
                 : 0
-            if (days20 >= 20 && days20 <= 35) {
+            if (days20 >= 60 && days20 <= 89) {
                 return data
             }
         })
@@ -412,7 +412,7 @@ exports.getLateReport = async (req, res, next) => {
             let days20 = data.creationDate
                 ? currentDate.diff(pastDate, 'days')
                 : 0
-            if (days20 > 30) {
+            if (days20 > 90) {
                 return data
             }
         })
