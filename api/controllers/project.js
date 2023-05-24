@@ -214,7 +214,7 @@ exports.updateProject = async (req, res, next) => {
             actions: 'update-student',
             data: findProject._id.toString(),
         })
-        res.status(201).json('updated project successfully')
+        res.status(201).json('updated successfully')
     } catch (error) {
         if (!error.statusCode) {
             error.statusCode = 500
