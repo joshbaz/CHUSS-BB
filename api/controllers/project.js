@@ -143,8 +143,9 @@ exports.createProject = async (req, res, next) => {
 /** update Project Details */
 exports.updateProject = async (req, res, next) => {
     try {
+         
         const projectId = req.params.id
-
+        
         const {
             registrationNumber,
             studentId,
@@ -187,6 +188,7 @@ exports.updateProject = async (req, res, next) => {
             throw error
         }
 
+        
         //change student
         findStudent.registrationNumber = registrationNumber
         findStudent.studentName = studentName
