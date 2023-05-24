@@ -1132,6 +1132,7 @@ exports.updateExaminer = async (req, res, next) => {
             bankCity,
             examinerAppLetter,
         } = req.body
+         console.log('name', name)
 
         let examinerId = req.params.id
 
@@ -1283,7 +1284,7 @@ exports.updateExaminer = async (req, res, next) => {
         }
 
         /** instance of an examiner */
-
+        console.log('name', name)
         getExaminer.jobtitle = jobtitle
         getExaminer.name = name
         getExaminer.email = email
@@ -1294,6 +1295,8 @@ exports.updateExaminer = async (req, res, next) => {
         getExaminer.otherTitles = otherTitles
         getExaminer.typeOfExaminer = typeOfExaminer
         getExaminer.preferredPayment = preferredPayment
+
+        console.log('name', name)
         //  console.log('made jump it')
         await getExaminer.save()
 

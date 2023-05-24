@@ -97,19 +97,10 @@ router.post(
     projectController.createProject
 )
 
-router.patch(
-    '/v1/update/:id',
-    isAuth,
-    uploadMiddleware,
-    projectController.updateProject
-)
+router.patch('/v1/updates/:id', isAuth, projectController.updateProject)
 
 /** project create */
-router.put(
-    '/vl/status/create',
-    isAuth,
-    projectController.createProjectStatus
-)
+router.put('/vl/status/create', isAuth, projectController.createProjectStatus)
 
 /** project status update */
 router.put(

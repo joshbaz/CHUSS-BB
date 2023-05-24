@@ -144,6 +144,7 @@ exports.createProject = async (req, res, next) => {
 exports.updateProject = async (req, res, next) => {
     try {
         const projectId = req.params.id
+
         const {
             registrationNumber,
             studentId,
