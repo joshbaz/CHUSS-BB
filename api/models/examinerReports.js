@@ -37,6 +37,17 @@ const examinerReportSchema = mongoose.Schema(
                 },
             },
         ],
+        SubmissionReminder: {
+            type: Boolean,
+            default: false,
+        },
+        SubmissionReminderDate: {
+            type: String,
+        },
+        pastDueDate: {
+            type: Boolean,
+            default: false,
+        },
     },
     {
         timestamp: true,

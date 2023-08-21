@@ -17,6 +17,21 @@ let mongo = require('mongodb')
 var Grid = require('gridfs-stream')
 
 require('dotenv').config()
+/** email configurations */
+const nodemailer = require('nodemailer')
+
+const fs = require('fs')
+const hogan = require('hogan.js')
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+
+    secure: true,
+    auth: {
+        user: 'joshuakimbareeba@gmail.com',
+        pass: 'svjsvtpetnehqqsn',
+    },
+})
+/** end - email configuration */
 const mongoUri = process.env.MONGO_R_URL
 const conn = mongoose.createConnection(mongoUri, {
     useNewUrlParser: true,
@@ -143,9 +158,8 @@ exports.createProject = async (req, res, next) => {
 /** update Project Details */
 exports.updateProject = async (req, res, next) => {
     try {
-         
         const projectId = req.params.id
-        
+
         const {
             registrationNumber,
             studentId,
@@ -188,7 +202,6 @@ exports.updateProject = async (req, res, next) => {
             throw error
         }
 
-        
         //change student
         findStudent.registrationNumber = registrationNumber
         findStudent.studentName = studentName
@@ -237,6 +250,8 @@ exports.createProjectStatus = async (req, res, next) => {
             projectId,
             startAt,
             expectedEnd,
+            timeline,
+            timelineDate,
         } = req.body
         const createdDate = Moments(new Date()).tz('Africa/Kampala')
         const startDate = Moments(new Date(startAt)).tz('Africa/Kampala')
@@ -339,6 +354,8 @@ exports.updateProjectStatus2 = async (req, res, next) => {
             startDate,
             expectedEnd,
             endDate,
+            timeline,
+            statusDate,
             statusEntryType,
             dateOfGraduation,
         } = req.body
@@ -347,11 +364,21 @@ exports.updateProjectStatus2 = async (req, res, next) => {
         const createdDate = Moments(new Date()).tz('Africa/Kampala')
         let startDates = null
         let expectedEndDate = null
+        let statusDateRegistered = null
         if (status !== 'Graduated') {
-            startDates = Moments(new Date(startDate)).tz('Africa/Kampala')
-            expectedEndDate = Moments(new Date(expectedEnd)).tz(
-                'Africa/Kampala'
-            )
+            startDates =
+                timeline === 'true'
+                    ? Moments(new Date(startDate)).tz('Africa/Kampala')
+                    : null
+            expectedEndDate =
+                timeline === 'true'
+                    ? Moments(new Date(expectedEnd)).tz('Africa/Kampala')
+                    : null
+            statusDateRegistered =
+                timeline === 'true'
+                    ? null
+                    : Moments(new Date(statusDate)).tz('Africa/Kampala')
+        } else {
         }
 
         const endDates =
@@ -361,7 +388,10 @@ exports.updateProjectStatus2 = async (req, res, next) => {
 
         let graduationDates = null
 
-        const findProject = await ProjectModel.findById(projectId)
+        /** checking for entire student information */
+        const findProject = await ProjectModel.findById(projectId).populate(
+            'student'
+        )
         if (!findProject) {
             const error = new Error('No project found')
             error.statusCode = 404
@@ -405,6 +435,7 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                     rgba: findTag.rgba,
                     startDate: startDates,
                     expectedEndDate,
+
                     graduationDates,
                 })
 
@@ -582,6 +613,8 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                 rgba: findTag.rgba,
                 startDate: startDates,
                 expectedEndDate,
+                timeline,
+                statusDate: statusDateRegistered,
                 graduationDates,
             })
 
@@ -627,7 +660,52 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                     data: findProject._id.toString(),
                 })
 
-                res.status(200).json('status added')
+                /** Send email if status is authorized for viva  */
+                if (
+                    saveProjectStatus.status.toLowerCase() ===
+                    'authorized for viva voce'
+                ) {
+                    let studentName = findProject.student.studentName
+                    let definedStatusDate = Moments(
+                        new Date(saveProjectStatus.statusDate)
+                    )
+                        .tz('Africa/Kampala')
+                        .format('MMM Do, YYYY')
+                    /** email configurations */
+
+                    let template = fs.readFileSync(
+                        './emailStatusUpdate.hjs',
+                        'utf-8'
+                    )
+                    let compliedTemplate = hogan.compile(template)
+
+                    let mailOptions = {
+                        from: 'joshuakimbareeba@gmail.com',
+                        to: 'joshuakimbareeba@gmail.com',
+                        subject: `Notification for Viva Voce Authorization for ${studentName}`,
+                        html: compliedTemplate.render({
+                            student: studentName,
+                            regNumber: findProject.student.registrationNumber,
+                            statusDate: definedStatusDate,
+                            title: 'Authorized for viva voce',
+                        }),
+                    }
+
+                    transporter.sendMail(mailOptions, async (error, info) => {
+                        if (error) {
+                            console.log(error)
+                        } else {
+                            console.log('email sent: ' + info.response)
+                            // findIndividualReport.SubmissionReminder = true
+                            // findIndividualReport.SubmissionReminderDate = currentDate
+                            //await findIndividualReport.save()
+                        }
+                    })
+
+                    res.status(200).json('status added')
+                } else {
+                    res.status(200).json('status added')
+                }
             } else {
                 findActiveStatus.endDate = endDates
                 findActiveStatus.active = false
@@ -638,6 +716,9 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                     saveProjectStatus.active = true
                     saveProjectStatus.endDate = endDates
                     saveProjectStatus.entryType = 'old entry'
+                    saveProjectStatus.endDate = endDates
+                    saveProjectStatus.timeline = timeline
+                    saveProjectStatus.statusDate = statusDateRegistered
                     findProject.activeStatus = saveProjectStatus.status
                 } else {
                     saveProjectStatus.active = true
@@ -660,7 +741,52 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                     actions: 'update-student',
                     data: findProject._id.toString(),
                 })
-                res.status(200).json('status added')
+
+                if (
+                    saveProjectStatus.status.toLowerCase() ===
+                    'authorized for viva voce'
+                ) {
+                    let studentName = findProject.student.studentName
+
+                    let definedStatusDate = Moments(
+                        new Date(saveProjectStatus.statusDate)
+                    ).tz('Africa/Kampala').format('MMM Do, YYYY')
+                    /** email configurations */
+
+                    let template = fs.readFileSync(
+                        './emailStatusUpdate.hjs',
+                        'utf-8'
+                    )
+                    let compliedTemplate = hogan.compile(template)
+
+                    let mailOptions = {
+                        from: 'joshuakimbareeba@gmail.com',
+                        to: 'joshuakimbareeba@gmail.com',
+                        subject: `Notification for Viva Voce Authorization for ${studentName}`,
+                        html: compliedTemplate.render({
+                            student: studentName,
+                            regNumber: findProject.student.registrationNumber,
+                            statusDate: definedStatusDate,
+                            title: 'Authorized for viva voce',
+                        }),
+                    }
+
+                    transporter.sendMail(mailOptions, async (error, info) => {
+                        if (error) {
+                            console.log(error)
+                        } else {
+                            console.log('email sent: ' + info.response)
+                            // findIndividualReport.SubmissionReminder = true
+                            // findIndividualReport.SubmissionReminderDate = currentDate
+                            //await findIndividualReport.save()
+                        }
+                    })
+
+                    res.status(200).json('status added')
+                } else {
+                    res.status(200).json('status added')
+                }
+                // res.status(200).json('status added')
             }
         }
     } catch (error) {

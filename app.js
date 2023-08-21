@@ -5,6 +5,7 @@ const socketio = require('socket.io')
 const bodyparser = require('body-parser')
 const jwt = require('jsonwebtoken')
 const AdminModel = require('./api/models/administrator')
+const cron = require('node-cron')
 
 const app = express()
 
@@ -152,3 +153,117 @@ mongoose
     .catch(() => {
         console.log('connection to db failed')
     })
+
+//scheduling emails
+
+// cron.schedule(
+//     '30 12 * * 1-6',
+//     async () => {
+//         console.log('running this every day')
+//         const nodemailer = require('nodemailer')
+//         const Moments = require('moment-timezone')
+//         const fs = require('fs')
+//         const hogan = require('hogan.js')
+//         const transporter = nodemailer.createTransport({
+//             service: 'gmail',
+
+//             secure: true,
+//             auth: {
+//                 user: 'joshuakimbareeba@gmail.com',
+//                 pass: 'svjsvtpetnehqqsn',
+//             },
+//         })
+
+//         const ExaminerReportModel = require('./api/models/examinerReports')
+//         const StudentModel = require('./api/models/students')
+
+//         const findReports = await ExaminerReportModel.find({
+//             $and: [
+//                 {
+//                     marked: false,
+//                 },
+//                 {
+//                     SubmissionReminder: false,
+//                 },
+//             ],
+//         })
+//             .sort({
+//                 createdAt: -1,
+//             })
+//             .populate('examiner reportFiles.files projectId')
+
+//        // console.log('find reports', findReports)
+//         let currentDate = Moments(new Date())
+
+//         const newMappedData = findReports.filter((data, index) => {
+//             let pastDate = data.creationDate
+//                 ? Moments(data.creationDate)
+//                 : Moments(new Date())
+
+//             let days20 = data.creationDate
+//                 ? currentDate.diff(pastDate, 'days')
+//                 : 0
+//             if (days20 >= 60 && days20 <= 89) {
+//                 return data
+//             } 
+//         })
+
+//         //console.log('lookin for mappedDta', newMappedData)
+
+//         let template = fs.readFileSync('./emailReminder.hjs', 'utf-8')
+//         let compiledTemplate = hogan.compile(template)
+
+//         for (let iteration = 0; iteration < newMappedData.length; iteration++) {
+//             const findIndividualReport = await ExaminerReportModel.findById({
+//                 _id: newMappedData[iteration]._id,
+//             }).populate('examiner reportFiles.files projectId')
+
+//             if (!findIndividualReport) {
+//                 continue
+//             }
+
+//             const findIndividualStudent = await StudentModel.findById({
+//                 _id: findIndividualReport.projectId.student,
+//             })
+//             if (!findIndividualStudent) {
+//                 continue
+//             }
+//             // console.log(
+//             //     'Report',
+//             //     iteration,
+//             //     findIndividualReport.examiner.email
+//             // )
+//             // console.log(
+//             //     'Individual',
+//             //     iteration,
+//             //     findIndividualStudent.studentName
+//             // )
+
+//             let mailOptions = {
+//                 from: 'joshuakimbareeba@gmail.com',
+//                 to: 'joshuakimbareeba@gmail.com',
+//                 // cc:"zsekito@gmail.com",
+//                 subject: 'Reminder For Examiner Report Submission.',
+//                 html: compiledTemplate.render({
+//                     title: '',
+//                     firstName: '',
+//                     student: findIndividualStudent.studentName,
+//                 }),
+//             }
+//             transporter.sendMail(mailOptions, async (error, info) => {
+//                 if (error) {
+//                     console.log(error)
+//                 } else {
+//                     console.log('email sent: ' + info.response)
+//                     findIndividualReport.SubmissionReminder = true
+//                     findIndividualReport.SubmissionReminderDate = currentDate
+//                     await findIndividualReport.save()
+
+//                 }
+//             })
+//         }
+//     },
+//     {
+//         timezone: 'Africa/Kampala',
+//     }
+// )

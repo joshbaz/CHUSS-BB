@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authorization For Viva Voce</title>
+
+</head>
+
+<body>
+    <tbody>
+       
+        <table class="tables products" style="display: flex;flex-direction:column;">
+             <tr>
+                <div style="margin-top: 20px; margin-left:20px;">
+                  Dear Prof/Assoc.Prof./Dr.
+                </div>
+            </tr>
+             <tr>
+                <div style="margin-top: 10px; margin-left:20px;">
+                  Greetings from College of Humanities and Social Sciences. 
+                </div>
+            </tr>
+             <tr>
+                <div style="margin-top: 20px; margin-left:20px;">
+                 <span data-bind='text: student'>{{student}}</span> <strong><span data-bind="text: regNumber">({{regNumber}})</span></strong> has been authorized for viva voce on {{statusDate}}.
+                </div>
+            </tr>
+            <tr>
+                <div style="margin-top: 20px; margin-left:20px;">
+                    Thank you.
+                </div>
+            </tr>
+            
+            
+            <tr>
+                <div style="margin-top: 10px; margin-left:20px;">
+                    <strong>Principal’s office</strong>
+                </div>
+                <div style="margin-top: 3px; margin-left:20px;">
+                    <strong>GPMS</strong>
+                </div>
+            </tr>
+        </table>
+        </table>
+        </td>
+        </table>
+        </td>
+        </td>
+        </tr>
+    </tbody>
+
+
+
+</body>
+
+</html>

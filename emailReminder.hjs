@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Reminder</title>
+
+</head>
+
+<body>
+    <tbody>
+       
+        <table class="tables products" style="display: flex;flex-direction:column;">
+             <tr>
+                <div style="margin-top: 20px; margin-left:20px;">
+                  Dear Prof/Assoc.Prof./Dr.
+                </div>
+            </tr>
+             <tr>
+                <div style="margin-top: 10px; margin-left:20px;">
+                  Greetings from College of Humanities and Social Sciences. 
+                </div>
+            </tr>
+             <tr>
+                <div style="margin-top: 20px; margin-left:20px;">
+                    It is now two months since you received dissertation(s) for <span data-bind='text: student'>{{student}}</span> for examination. Kindly expedite the process before the end of the remaining period (1 month).
+                </div>
+            </tr>
+            <tr>
+                <div style="margin-top: 20px; margin-left:20px;">
+                    Once again thank you for supporting our Graduate activities.
+                </div>
+            </tr>
+            
+            
+            <tr>
+                <div style="margin-top: 10px; margin-left:20px;">
+                    <strong>Principal’s office</strong>
+                </div>
+            </tr>
+        </table>
+        </table>
+        </td>
+        </table>
+        </td>
+        </td>
+        </tr>
+    </tbody>
+
+
+
+</body>
+
+</html>

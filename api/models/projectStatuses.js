@@ -24,11 +24,17 @@ const projectStatusSchema = mongoose.Schema(
         expectedEndDate: Date,
         endDate: Date,
         graduationDate: Date,
+        timeline: {
+            type: String,
+        },
+        statusDate: {
+            type: Date,
+        },
         active: {
             type: Boolean,
             default: false,
         },
-         entryType: {
+        entryType: {
             type: String,
             default: 'new entry',
         },
