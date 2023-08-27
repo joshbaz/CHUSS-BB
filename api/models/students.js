@@ -7,7 +7,9 @@ const studentSchema = mongoose.Schema(
             type: String,
             required: true,
         },
+
         studentName: String,
+        gender: 'String',
         graduate_program_type: String,
         degree_program: String,
         semester: String,
