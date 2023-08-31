@@ -69,6 +69,7 @@ exports.createProject = async (req, res, next) => {
         const {
             registrationNumber,
             studentName,
+            gender,
             programType,
             degreeProgram,
             schoolName,
@@ -109,6 +110,7 @@ exports.createProject = async (req, res, next) => {
             _id: mongoose.Types.ObjectId(),
             registrationNumber,
             studentName,
+            gender,
             graduate_program_type: programType,
             degree_program: degreeProgram,
             schoolName,
@@ -164,6 +166,7 @@ exports.updateProject = async (req, res, next) => {
             registrationNumber,
             studentId,
             studentName,
+            gender,
             programType,
             degreeProgram,
             schoolName,
@@ -205,6 +208,7 @@ exports.updateProject = async (req, res, next) => {
         //change student
         findStudent.registrationNumber = registrationNumber
         findStudent.studentName = studentName
+         findStudent.gender = gender
         findStudent.fundingType = fundingType
         findStudent.graduate_program_type = programType
         findStudent.degree_program = degreeProgram
