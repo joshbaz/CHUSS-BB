@@ -208,7 +208,7 @@ exports.updateProject = async (req, res, next) => {
         //change student
         findStudent.registrationNumber = registrationNumber
         findStudent.studentName = studentName
-         findStudent.gender = gender
+        findStudent.gender = gender
         findStudent.fundingType = fundingType
         findStudent.graduate_program_type = programType
         findStudent.degree_program = degreeProgram
@@ -350,6 +350,7 @@ exports.createProjectStatus = async (req, res, next) => {
 }
 
 /** new project status update */
+/** currently running */
 exports.updateProjectStatus2 = async (req, res, next) => {
     try {
         const {
@@ -667,7 +668,7 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                 /** Send email if status is authorized for viva  */
                 if (
                     saveProjectStatus.status.toLowerCase() ===
-                    'authorized for viva voce'
+                    'authorised for viva voce'
                 ) {
                     let studentName = findProject.student.studentName
                     let definedStatusDate = Moments(
@@ -707,6 +708,41 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                     })
 
                     res.status(200).json('status added')
+                } else if (
+                    saveProjectStatus.status.toLowerCase() ===
+                    'authorized for public defense'
+                ) {
+                    let studentName = findProject.student.studentName
+                    let definedStatusDate = Moments(
+                        new Date(saveProjectStatus.statusDate)
+                    )
+                        .tz('Africa/Kampala')
+                        .format('MMM Do, YYYY')
+
+                    let regNumber = findProject.student.registrationNumber
+                    //send an sms to the staff members
+                    //sending SMS
+                    const accountSid = process.env.TWILIO_ACCOUNT_SID
+                    const authToken = process.env.TWILIO_AUTH_TOKEN
+                    const client = require('twilio')(accountSid, authToken)
+                    let PhoneNumberArray = ['+256752667844','+256700560081','+256706861165']
+
+                    for(let iteration = 0; iteration < PhoneNumberArray.length; iteration++){
+                        let ttIteration = iteration + 1;
+
+                        client.messages
+                            .create({
+                                messagingServiceSid: process.env.messageID,
+                                body: `${studentName} of Reg. No ${regNumber} has been Authorized for Public Defense on ${definedStatusDate}`,
+                                to: PhoneNumberArray[iteration],
+                            })
+                            .then((message) => console.log(message.sid))
+
+                        if (ttIteration === PhoneNumberArray.length){
+                            res.status(200).json('status added')
+                        }
+                    }
+                    
                 } else {
                     res.status(200).json('status added')
                 }
@@ -754,7 +790,9 @@ exports.updateProjectStatus2 = async (req, res, next) => {
 
                     let definedStatusDate = Moments(
                         new Date(saveProjectStatus.statusDate)
-                    ).tz('Africa/Kampala').format('MMM Do, YYYY')
+                    )
+                        .tz('Africa/Kampala')
+                        .format('MMM Do, YYYY')
                     /** email configurations */
 
                     let template = fs.readFileSync(

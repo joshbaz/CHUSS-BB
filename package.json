@@ -27,7 +27,8 @@
     "multer-gridfs-storage": "^5.0.2",
     "node-cron": "^3.0.2",
     "nodemailer": "^6.9.3",
-    "socket.io": "^4.5.1"
+    "socket.io": "^4.5.1",
+    "twilio": "^4.17.0"
   },
   "devDependencies": {
     "@types/gridfs-stream": "^0.5.36",

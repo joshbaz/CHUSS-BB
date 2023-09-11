@@ -6,6 +6,9 @@ const bodyparser = require('body-parser')
 const jwt = require('jsonwebtoken')
 const AdminModel = require('./api/models/administrator')
 const cron = require('node-cron')
+const hogan = require('hogan.js')
+const nodemailer = require('nodemailer')
+//const smtpTransport = require('nodemailer-smtp-transport')
 
 const app = express()
 
@@ -154,6 +157,51 @@ mongoose
         console.log('connection to db failed')
     })
 
+//configure emails
+// const transporter = nodemailer.createTransport(
+//     smtpTransport({
+//         host: 'principal.chuss@mak.ac.ug',
+
+//         secureConnection: false,
+//         auth: {
+//             user: 'principal.chuss@mak.ac.ug',
+//             pass: 'Chuss@123',
+//         },
+//     })
+// )
+
+// let mailOptions = {
+//     from: 'principal.chuss@mak.ac.ug',
+//     to: 'joshuakimbareeba@gmail.com',
+//     subject: `Notification for GPMS Email`,
+//     message: 'Notified.',
+// }
+
+//    transporter.sendMail(mailOptions, async (error, info) => {
+//        if (error) {
+//            console.log(error)
+//        } else {
+//            console.log('email sent: ' + info.response)
+//            // findIndividualReport.SubmissionReminder = true
+//            // findIndividualReport.SubmissionReminderDate = currentDate
+//            //await findIndividualReport.save()
+//        }
+//    })
+
+
+
+//sending SMS
+// const accountSid = process.env.TWILIO_ACCOUNT_SID
+// const authToken = process.env.TWILIO_AUTH_TOKEN
+// const client = require('twilio')(accountSid, authToken)
+// client.messages
+//     .create({
+//         messagingServiceSid: process.env.messageID,
+//         body: 'Hello! This is a message sent from Joshua GPMS TRIAL.',
+//         to: ['+256787785114', '+256706861165'],
+//     })
+//     .then((message) => console.log(message.sid)).catch((ee)=> console.log(ee))
+
 //scheduling emails
 
 // cron.schedule(
@@ -205,7 +253,7 @@ mongoose
 //                 : 0
 //             if (days20 >= 60 && days20 <= 89) {
 //                 return data
-//             } 
+//             }
 //         })
 
 //         //console.log('lookin for mappedDta', newMappedData)
