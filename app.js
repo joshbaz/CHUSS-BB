@@ -160,7 +160,7 @@ mongoose
 //configure emails
 // const transporter = nodemailer.createTransport(
 //     smtpTransport({
-//         host: 'principal.chuss@mak.ac.ug',
+//         host: '',
 
 //         secureConnection: false,
 //         auth: {
@@ -171,7 +171,7 @@ mongoose
 // )
 
 // let mailOptions = {
-//     from: 'principal.chuss@mak.ac.ug',
+//     from: '',
 //     to: 'joshuakimbareeba@gmail.com',
 //     subject: `Notification for GPMS Email`,
 //     message: 'Notified.',
