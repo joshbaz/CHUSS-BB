@@ -164,8 +164,8 @@ mongoose
 
 //         secureConnection: false,
 //         auth: {
-//             user: 'principal.chuss@mak.ac.ug',
-//             pass: 'Chuss@123',
+//             user: '',
+//             pass: '',
 //         },
 //     })
 // )
