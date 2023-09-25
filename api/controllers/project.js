@@ -665,7 +665,8 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                     data: findProject._id.toString(),
                 })
 
-                /** Send email if status is authorized for viva  */
+                /** Section to handle email requests and SMS */
+                /** Send email if status is authorized for viva and send sms  */
                 if (
                     saveProjectStatus.status.toLowerCase() ===
                     'authorised for viva voce'
@@ -676,6 +677,9 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                     )
                         .tz('Africa/Kampala')
                         .format('MMM Do, YYYY')
+                    let regNumber = findProject.student.registrationNumber
+
+                    //send an email to staff members
                     /** email configurations */
 
                     let template = fs.readFileSync(
@@ -707,7 +711,38 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                         }
                     })
 
-                    res.status(200).json('status added')
+                    //send an sms to the staff members
+                    //sending SMS
+                    const accountSid = process.env.TWILIO_ACCOUNT_SID
+                    const authToken = process.env.TWILIO_AUTH_TOKEN
+                    const client = require('twilio')(accountSid, authToken)
+                    let PhoneNumberArray = [
+                        '+256703143316',
+                        '+256700560081',
+                        '+256706861165',
+                    ]
+
+                    for (
+                        let iteration = 0;
+                        iteration < PhoneNumberArray.length;
+                        iteration++
+                    ) {
+                        let ttIteration = iteration + 1
+
+                        client.messages
+                            .create({
+                                messagingServiceSid: process.env.messageID,
+                                body: `${studentName} of Reg. No ${regNumber} has been Authorized for Viva Voce on ${definedStatusDate}`,
+                                to: PhoneNumberArray[iteration],
+                            })
+                            .then((message) => console.log(message.sid))
+
+                        if (ttIteration === PhoneNumberArray.length) {
+                            res.status(200).json('status added')
+                        }
+                    }
+
+                    // res.status(200).json('status added')
                 } else if (
                     saveProjectStatus.status.toLowerCase() ===
                     'authorized for public defense'
@@ -725,10 +760,19 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                     const accountSid = process.env.TWILIO_ACCOUNT_SID
                     const authToken = process.env.TWILIO_AUTH_TOKEN
                     const client = require('twilio')(accountSid, authToken)
-                    let PhoneNumberArray = ['+256752667844','+256700560081','+256706861165']
+                    let PhoneNumberArray = [
+                        '+256752667844',
+                        '+256703143316',
+                        '+256772352887',
+                        '+256706861165',
+                    ]
 
-                    for(let iteration = 0; iteration < PhoneNumberArray.length; iteration++){
-                        let ttIteration = iteration + 1;
+                    for (
+                        let iteration = 0;
+                        iteration < PhoneNumberArray.length;
+                        iteration++
+                    ) {
+                        let ttIteration = iteration + 1
 
                         client.messages
                             .create({
@@ -738,14 +782,58 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                             })
                             .then((message) => console.log(message.sid))
 
-                        if (ttIteration === PhoneNumberArray.length){
+                        if (ttIteration === PhoneNumberArray.length) {
                             res.status(200).json('status added')
                         }
                     }
-                    
+                } else if (
+                    saveProjectStatus.status.toLowerCase() ===
+                    'publicly defended'
+                ) {
+                    //this section is for public defense
+                    let studentName = findProject.student.studentName
+                    let definedStatusDate = Moments(
+                        new Date(saveProjectStatus.statusDate)
+                    )
+                        .tz('Africa/Kampala')
+                        .format('MMM Do, YYYY')
+
+                    let regNumber = findProject.student.registrationNumber
+                    //send an sms to the staff members
+                    //sending SMS
+                    const accountSid = process.env.TWILIO_ACCOUNT_SID
+                    const authToken = process.env.TWILIO_AUTH_TOKEN
+                    const client = require('twilio')(accountSid, authToken)
+                    let PhoneNumberArray = [
+                        '+256752667844',
+                        '+256703143316',
+                        '+256772352887',
+                        '+256706861165',
+                    ]
+
+                    for (
+                        let iteration = 0;
+                        iteration < PhoneNumberArray.length;
+                        iteration++
+                    ) {
+                        let ttIteration = iteration + 1
+
+                        client.messages
+                            .create({
+                                messagingServiceSid: process.env.messageID,
+                                body: `${studentName} of Reg. No ${regNumber} has Publicly Defended his PhD Work on ${definedStatusDate}`,
+                                to: PhoneNumberArray[iteration],
+                            })
+                            .then((message) => console.log(message.sid))
+
+                        if (ttIteration === PhoneNumberArray.length) {
+                            res.status(200).json('status added')
+                        }
+                    }
                 } else {
                     res.status(200).json('status added')
                 }
+                res.status(200).json('status added')
             } else {
                 findActiveStatus.endDate = endDates
                 findActiveStatus.active = false
@@ -782,17 +870,18 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                     data: findProject._id.toString(),
                 })
 
-                if (
-                    saveProjectStatus.status.toLowerCase() ===
-                    'authorized for viva voce'
-                ) {
+                /** Section to handle email requests and SMS */
+                /** Send email if status is authorized for viva and send sms  */
+                if ( saveProjectStatus.status.toLowerCase() === 'authorised for viva voce') {
                     let studentName = findProject.student.studentName
-
                     let definedStatusDate = Moments(
                         new Date(saveProjectStatus.statusDate)
                     )
                         .tz('Africa/Kampala')
                         .format('MMM Do, YYYY')
+                    let regNumber = findProject.student.registrationNumber
+
+                    //send an email to staff members
                     /** email configurations */
 
                     let template = fs.readFileSync(
@@ -824,11 +913,130 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                         }
                     })
 
-                    res.status(200).json('status added')
+                    //send an sms to the staff members
+                    //sending SMS
+                    const accountSid = process.env.TWILIO_ACCOUNT_SID
+                    const authToken = process.env.TWILIO_AUTH_TOKEN
+                    const client = require('twilio')(accountSid, authToken)
+                    let PhoneNumberArray = [
+                        '+256703143316',
+                        '+256700560081',
+                        '+256772352887',
+                        '+256706861165',
+                    ]
+
+                    for (
+                        let iteration = 0;
+                        iteration < PhoneNumberArray.length;
+                        iteration++
+                    ) {
+                        let ttIteration = iteration + 1
+
+                        client.messages
+                            .create({
+                                messagingServiceSid: process.env.messageID,
+                                body: `${studentName} of Reg. No ${regNumber} has been Authorized for Viva Voce on ${definedStatusDate}`,
+                                to: PhoneNumberArray[iteration],
+                            })
+                            .then((message) => console.log(message.sid))
+
+                        if (ttIteration === PhoneNumberArray.length) {
+                            res.status(200).json('status added')
+                        }
+                    }
+
+                    // res.status(200).json('status added')
+                } else if (
+                    saveProjectStatus.status.toLowerCase() ===
+                    'authorized for public defense'
+                ) {
+                    let studentName = findProject.student.studentName
+                    let definedStatusDate = Moments(
+                        new Date(saveProjectStatus.statusDate)
+                    )
+                        .tz('Africa/Kampala')
+                        .format('MMM Do, YYYY')
+
+                    let regNumber = findProject.student.registrationNumber
+                    //send an sms to the staff members
+                    //sending SMS
+                    const accountSid = process.env.TWILIO_ACCOUNT_SID
+                    const authToken = process.env.TWILIO_AUTH_TOKEN
+                    const client = require('twilio')(accountSid, authToken)
+                    let PhoneNumberArray = [
+                        '+256752667844',
+                        '+256703143316',
+                        '+256772352887',
+                        '+256706861165',
+                    ]
+
+                    for (
+                        let iteration = 0;
+                        iteration < PhoneNumberArray.length;
+                        iteration++
+                    ) {
+                        let ttIteration = iteration + 1
+
+                        client.messages
+                            .create({
+                                messagingServiceSid: process.env.messageID,
+                                body: `${studentName} of Reg. No ${regNumber} has been Authorized for Public Defense on ${definedStatusDate}`,
+                                to: PhoneNumberArray[iteration],
+                            })
+                            .then((message) => console.log(message.sid))
+
+                        if (ttIteration === PhoneNumberArray.length) {
+                            res.status(200).json('status added')
+                        }
+                    }
+                } else if (
+                    saveProjectStatus.status.toLowerCase() ===
+                    'publicly defended'
+                ) {
+                    //this section is for public defense
+                    let studentName = findProject.student.studentName
+                    let definedStatusDate = Moments(
+                        new Date(saveProjectStatus.statusDate)
+                    )
+                        .tz('Africa/Kampala')
+                        .format('MMM Do, YYYY')
+
+                    let regNumber = findProject.student.registrationNumber
+                    //send an sms to the staff members
+                    //sending SMS
+                    const accountSid = process.env.TWILIO_ACCOUNT_SID
+                    const authToken = process.env.TWILIO_AUTH_TOKEN
+                    const client = require('twilio')(accountSid, authToken)
+                    let PhoneNumberArray = [
+                        '+256752667844',
+                        '+256703143316',
+                        '+256772352887',
+                        '+256706861165',
+                    ]
+
+                    for (
+                        let iteration = 0;
+                        iteration < PhoneNumberArray.length;
+                        iteration++
+                    ) {
+                        let ttIteration = iteration + 1
+
+                        client.messages
+                            .create({
+                                messagingServiceSid: process.env.messageID,
+                                body: `${studentName} of Reg. No ${regNumber} has Publicly Defended his PhD Work on ${definedStatusDate}`,
+                                to: PhoneNumberArray[iteration],
+                            })
+                            .then((message) => console.log(message.sid))
+
+                        if (ttIteration === PhoneNumberArray.length) {
+                            res.status(200).json('status added')
+                        }
+                    }
                 } else {
                     res.status(200).json('status added')
                 }
-                // res.status(200).json('status added')
+                res.status(200).json('status added')
             }
         }
     } catch (error) {
@@ -841,128 +1049,128 @@ exports.updateProjectStatus2 = async (req, res, next) => {
 
 /** update Project Status */
 /** nolonger in use */
-exports.updateProjectStatus = async (req, res, next) => {
-    try {
-        const { status, notes } = req.body
-        const projectId = req.params.id
-        const findProject = await ProjectModel.findById(projectId)
-        if (!findProject) {
-            const error = new Error('No project found')
-            error.statusCode = 404
-            throw error
-        }
-        let newDataArray = [...findProject.projectStatus]
+// exports.updateProjectStatus = async (req, res, next) => {
+//     try {
+//         const { status, notes } = req.body
+//         const projectId = req.params.id
+//         const findProject = await ProjectModel.findById(projectId)
+//         if (!findProject) {
+//             const error = new Error('No project found')
+//             error.statusCode = 404
+//             throw error
+//         }
+//         let newDataArray = [...findProject.projectStatus]
 
-        // newDataArray.filter((element, index) => {
-        //     if (element.active === true) {
-        //         if (element.status !== status) {
-        //             newDataArray[index].status = false
-        //         }
-        //     }
-        // })
+//         // newDataArray.filter((element, index) => {
+//         //     if (element.active === true) {
+//         //         if (element.status !== status) {
+//         //             newDataArray[index].status = false
+//         //         }
+//         //     }
+//         // })
 
-        for (let iteration = 0; iteration < newDataArray.length; iteration++) {
-            let alliteration = iteration + 1
+//         for (let iteration = 0; iteration < newDataArray.length; iteration++) {
+//             let alliteration = iteration + 1
 
-            if (newDataArray[iteration].active === true) {
-                if (
-                    newDataArray[iteration].status.toLowerCase() !==
-                    status.toLowerCase()
-                ) {
-                    newDataArray[iteration].active = false
-                    newDataArray[iteration].completed = true
+//             if (newDataArray[iteration].active === true) {
+//                 if (
+//                     newDataArray[iteration].status.toLowerCase() !==
+//                     status.toLowerCase()
+//                 ) {
+//                     newDataArray[iteration].active = false
+//                     newDataArray[iteration].completed = true
 
-                    // findProject.projectStatus = [
-                    //     ...newDataArray,
-                    //     {
-                    //         status: status,
-                    //         notes: notes,
-                    //         active: true,
-                    //     },
-                    // ]
+//                     // findProject.projectStatus = [
+//                     //     ...newDataArray,
+//                     //     {
+//                     //         status: status,
+//                     //         notes: notes,
+//                     //         active: true,
+//                     //     },
+//                     // ]
 
-                    // await findProject.save()
-                    // return res.status(200).json('status 3 updated')
-                } else {
-                    newDataArray[iteration].notes = notes
-                    findProject.activeStatus = status
-                    findProject.projectStatus = [...newDataArray]
-                    await findProject.save()
-                    io.getIO().emit('updatestudent', {
-                        actions: 'update-student',
-                        data: findProject._id.toString(),
-                    })
-                    return res.status(200).json('status  updated')
-                }
-            }
+//                     // await findProject.save()
+//                     // return res.status(200).json('status 3 updated')
+//                 } else {
+//                     newDataArray[iteration].notes = notes
+//                     findProject.activeStatus = status
+//                     findProject.projectStatus = [...newDataArray]
+//                     await findProject.save()
+//                     io.getIO().emit('updatestudent', {
+//                         actions: 'update-student',
+//                         data: findProject._id.toString(),
+//                     })
+//                     return res.status(200).json('status  updated')
+//                 }
+//             }
 
-            if (
-                newDataArray[iteration].status.toLowerCase() ===
-                status.toLowerCase()
-            ) {
-                newDataArray[iteration].active = true
-                newDataArray[iteration].completed = false
-                findProject.activeStatus = status
-                let removedArray = newDataArray.splice(iteration + 1)
-                if (removedArray.length > 0) {
-                    let filteredArray = removedArray.filter((data) => {
-                        data.completed = false
-                        data.active = false
-                        return data
-                    })
+//             if (
+//                 newDataArray[iteration].status.toLowerCase() ===
+//                 status.toLowerCase()
+//             ) {
+//                 newDataArray[iteration].active = true
+//                 newDataArray[iteration].completed = false
+//                 findProject.activeStatus = status
+//                 let removedArray = newDataArray.splice(iteration + 1)
+//                 if (removedArray.length > 0) {
+//                     let filteredArray = removedArray.filter((data) => {
+//                         data.completed = false
+//                         data.active = false
+//                         return data
+//                     })
 
-                    //  console.log('filtered data', filteredArray, newDataArray)
+//                     //  console.log('filtered data', filteredArray, newDataArray)
 
-                    findProject.projectStatus = [
-                        ...newDataArray,
-                        ...filteredArray,
-                    ]
-                    await findProject.save()
-                    io.getIO().emit('updatestudent', {
-                        actions: 'update-student',
-                        data: findProject._id.toString(),
-                    })
-                    return res.status(200).json('status  updated')
-                } else {
-                    findProject.projectStatus = [...newDataArray]
-                    await findProject.save()
-                    io.getIO().emit('updatestudent', {
-                        actions: 'update-student',
-                        data: findProject._id.toString(),
-                    })
-                    return res.status(200).json('status  updated')
-                }
-            }
+//                     findProject.projectStatus = [
+//                         ...newDataArray,
+//                         ...filteredArray,
+//                     ]
+//                     await findProject.save()
+//                     io.getIO().emit('updatestudent', {
+//                         actions: 'update-student',
+//                         data: findProject._id.toString(),
+//                     })
+//                     return res.status(200).json('status  updated')
+//                 } else {
+//                     findProject.projectStatus = [...newDataArray]
+//                     await findProject.save()
+//                     io.getIO().emit('updatestudent', {
+//                         actions: 'update-student',
+//                         data: findProject._id.toString(),
+//                     })
+//                     return res.status(200).json('status  updated')
+//                 }
+//             }
 
-            if (
-                alliteration === newDataArray.length &&
-                newDataArray[iteration].status.toLowerCase() !==
-                    status.toLowerCase()
-            ) {
-                findProject.projectStatus = [
-                    ...newDataArray,
-                    {
-                        status: status,
-                        notes: notes,
-                        active: true,
-                    },
-                ]
-                findProject.activeStatus = status
-                await findProject.save()
-                io.getIO().emit('updatestudent', {
-                    actions: 'update-student',
-                    data: findProject._id.toString(),
-                })
-                res.status(200).json('status  updated')
-            }
-        }
-    } catch (error) {
-        if (!error.statusCode) {
-            error.statusCode = 500
-        }
-        next(error)
-    }
-}
+//             if (
+//                 alliteration === newDataArray.length &&
+//                 newDataArray[iteration].status.toLowerCase() !==
+//                     status.toLowerCase()
+//             ) {
+//                 findProject.projectStatus = [
+//                     ...newDataArray,
+//                     {
+//                         status: status,
+//                         notes: notes,
+//                         active: true,
+//                     },
+//                 ]
+//                 findProject.activeStatus = status
+//                 await findProject.save()
+//                 io.getIO().emit('updatestudent', {
+//                     actions: 'update-student',
+//                     data: findProject._id.toString(),
+//                 })
+//                 res.status(200).json('status  updated')
+//             }
+//         }
+//     } catch (error) {
+//         if (!error.statusCode) {
+//             error.statusCode = 500
+//         }
+//         next(error)
+//     }
+// }
 
 /** paginated projects */
 
