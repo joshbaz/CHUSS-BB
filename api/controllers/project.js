@@ -716,11 +716,7 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                     const accountSid = process.env.TWILIO_ACCOUNT_SID
                     const authToken = process.env.TWILIO_AUTH_TOKEN
                     const client = require('twilio')(accountSid, authToken)
-                    let PhoneNumberArray = [
-                        '+256703143316',
-                        '+256700560081',
-                        '+256706861165',
-                    ]
+                    let PhoneNumberArray = ['+256700560081']
 
                     for (
                         let iteration = 0;
@@ -760,12 +756,7 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                     const accountSid = process.env.TWILIO_ACCOUNT_SID
                     const authToken = process.env.TWILIO_AUTH_TOKEN
                     const client = require('twilio')(accountSid, authToken)
-                    let PhoneNumberArray = [
-                        '+256752667844',
-                        '+256703143316',
-                        '+256772352887',
-                        '+256706861165',
-                    ]
+                    let PhoneNumberArray = ['+256700560081']
 
                     for (
                         let iteration = 0;
@@ -777,7 +768,7 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                         client.messages
                             .create({
                                 messagingServiceSid: process.env.messageID,
-                                body: `${studentName} of Reg. No ${regNumber} has been Authorized for Public Defense on ${definedStatusDate}`,
+                                body: `${studentName} of Reg. No ${regNumber} has been Authorized for Public Defence on ${definedStatusDate}`,
                                 to: PhoneNumberArray[iteration],
                             })
                             .then((message) => console.log(message.sid))
@@ -872,7 +863,10 @@ exports.updateProjectStatus2 = async (req, res, next) => {
 
                 /** Section to handle email requests and SMS */
                 /** Send email if status is authorized for viva and send sms  */
-                if ( saveProjectStatus.status.toLowerCase() === 'authorised for viva voce') {
+                if (
+                    saveProjectStatus.status.toLowerCase() ===
+                    'authorised for viva voce'
+                ) {
                     let studentName = findProject.student.studentName
                     let definedStatusDate = Moments(
                         new Date(saveProjectStatus.statusDate)
@@ -963,13 +957,7 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                     const accountSid = process.env.TWILIO_ACCOUNT_SID
                     const authToken = process.env.TWILIO_AUTH_TOKEN
                     const client = require('twilio')(accountSid, authToken)
-                    let PhoneNumberArray = [
-                        '+256752667844',
-                        '+256703143316',
-                        '+256772352887',
-                        '+256709604148',
-                        '+256706861165',
-                    ]
+                    let PhoneNumberArray = ['+256700560081']
 
                     for (
                         let iteration = 0;
@@ -981,7 +969,7 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                         client.messages
                             .create({
                                 messagingServiceSid: process.env.messageID,
-                                body: `${studentName} of Reg. No ${regNumber} has been Authorized for Public Defense on ${definedStatusDate}`,
+                                body: `${studentName} of Reg. No ${regNumber} has been Authorized for Public Defence on ${definedStatusDate}`,
                                 to: PhoneNumberArray[iteration],
                             })
                             .then((message) => console.log(message.sid))
