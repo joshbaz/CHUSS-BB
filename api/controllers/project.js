@@ -716,7 +716,11 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                     const accountSid = process.env.TWILIO_ACCOUNT_SID
                     const authToken = process.env.TWILIO_AUTH_TOKEN
                     const client = require('twilio')(accountSid, authToken)
-                    let PhoneNumberArray = ['+256700560081']
+                    let PhoneNumberArray = [
+                        '+256772352887', //Prof.EA
+                        '+256700560081', //Dr. ZS
+                        '+256706861165', //JK
+                    ]
 
                     for (
                         let iteration = 0;
@@ -756,7 +760,12 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                     const accountSid = process.env.TWILIO_ACCOUNT_SID
                     const authToken = process.env.TWILIO_AUTH_TOKEN
                     const client = require('twilio')(accountSid, authToken)
-                    let PhoneNumberArray = ['+256700560081']
+                    let PhoneNumberArray = [
+                        '+256752667844', //Prof.JA
+                        '+256700560081', //Dr.ZS
+                        '+256772352887', //Prof.EA
+                        '+256706861165', //JK
+                    ]
 
                     for (
                         let iteration = 0;
@@ -796,10 +805,10 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                     const authToken = process.env.TWILIO_AUTH_TOKEN
                     const client = require('twilio')(accountSid, authToken)
                     let PhoneNumberArray = [
-                        '+256752667844',
-                        '+256703143316',
-                        '+256772352887',
-                        '+256706861165',
+                        '+256752667844', //Prof.JA
+                        '+256700560081', //Dr.ZS
+                        '+256772352887', //Prof.EA
+                        '+256706861165', //JK
                     ]
 
                     for (
@@ -824,7 +833,7 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                 } else {
                     res.status(200).json('status added')
                 }
-                res.status(200).json('status added')
+             //   res.status(200).json('status added')
             } else {
                 findActiveStatus.endDate = endDates
                 findActiveStatus.active = false
@@ -913,10 +922,9 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                     const authToken = process.env.TWILIO_AUTH_TOKEN
                     const client = require('twilio')(accountSid, authToken)
                     let PhoneNumberArray = [
-                        '+256703143316',
-                        '+256700560081',
-                        '+256772352887',
-                        '+256706861165',
+                        '+256700560081', //Dr.ZS
+                        '+256772352887', //Prof.EA
+                        '+256706861165', //JK
                     ]
 
                     for (
@@ -957,7 +965,12 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                     const accountSid = process.env.TWILIO_ACCOUNT_SID
                     const authToken = process.env.TWILIO_AUTH_TOKEN
                     const client = require('twilio')(accountSid, authToken)
-                    let PhoneNumberArray = ['+256700560081']
+                    let PhoneNumberArray = [
+                        '+256752667844', //Prof.JA
+                        '+256700560081', //Dr.ZS
+                        '+256772352887', //Prof.EA
+                        '+256706861165', //JK
+                    ]
 
                     for (
                         let iteration = 0;
@@ -997,10 +1010,10 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                     const authToken = process.env.TWILIO_AUTH_TOKEN
                     const client = require('twilio')(accountSid, authToken)
                     let PhoneNumberArray = [
-                        '+256752667844',
-                        '+256703143316',
-                        '+256772352887',
-                        '+256706861165',
+                        '+256752667844', //Prof.JA
+                        '+256700560081', //Dr.ZS
+                        '+256772352887', //Prof.EA
+                        '+256706861165', //JK
                     ]
 
                     for (
@@ -1025,7 +1038,7 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                 } else {
                     res.status(200).json('status added')
                 }
-                res.status(200).json('status added')
+               // res.status(200).json('status added')
             }
         }
     } catch (error) {
