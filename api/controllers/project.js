@@ -718,7 +718,7 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                     const client = require('twilio')(accountSid, authToken)
                     let PhoneNumberArray = [
                         '+256772352887', //Prof.EA
-                        '+256700560081', //Dr. ZS
+                        '+256774344905', //Dr. ZS
                         '+256706861165', //JK
                     ]
 
@@ -762,7 +762,7 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                     const client = require('twilio')(accountSid, authToken)
                     let PhoneNumberArray = [
                         '+256752667844', //Prof.JA
-                        '+256700560081', //Dr.ZS
+                        '+256774344905', //Dr.ZS
                         '+256772352887', //Prof.EA
                         '+256706861165', //JK
                     ]
@@ -922,7 +922,7 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                     const authToken = process.env.TWILIO_AUTH_TOKEN
                     const client = require('twilio')(accountSid, authToken)
                     let PhoneNumberArray = [
-                        '+256700560081', //Dr.ZS
+                        '+256774344905', //Dr.ZS
                         '+256772352887', //Prof.EA
                         '+256706861165', //JK
                     ]
@@ -967,7 +967,7 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                     const client = require('twilio')(accountSid, authToken)
                     let PhoneNumberArray = [
                         '+256752667844', //Prof.JA
-                        '+256700560081', //Dr.ZS
+                        '+256774344905', //Dr.ZS
                         '+256772352887', //Prof.EA
                         '+256706861165', //JK
                     ]
@@ -1011,7 +1011,7 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                     const client = require('twilio')(accountSid, authToken)
                     let PhoneNumberArray = [
                         '+256752667844', //Prof.JA
-                        '+256700560081', //Dr.ZS
+                        '+256774344905', //Dr.ZS
                         '+256772352887', //Prof.EA
                         '+256706861165', //JK
                     ]
