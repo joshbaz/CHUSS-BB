@@ -806,7 +806,7 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                     const client = require('twilio')(accountSid, authToken)
                     let PhoneNumberArray = [
                         '+256752667844', //Prof.JA
-                        '+256700560081', //Dr.ZS
+                        '+256774344905', //Dr.ZS
                         '+256772352887', //Prof.EA
                         '+256706861165', //JK
                     ]
@@ -833,7 +833,7 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                 } else {
                     res.status(200).json('status added')
                 }
-             //   res.status(200).json('status added')
+                //   res.status(200).json('status added')
             } else {
                 findActiveStatus.endDate = endDates
                 findActiveStatus.active = false
@@ -1038,7 +1038,7 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                 } else {
                     res.status(200).json('status added')
                 }
-               // res.status(200).json('status added')
+                // res.status(200).json('status added')
             }
         }
     } catch (error) {
