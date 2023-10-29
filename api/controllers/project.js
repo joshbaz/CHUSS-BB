@@ -362,7 +362,7 @@ exports.updateProjectStatus2 = async (req, res, next) => {
             timeline,
             statusDate,
             statusEntryType,
-            dateOfGraduation,
+            GraduationDate,
         } = req.body
         const projectId = req.params.id
 
@@ -412,9 +412,8 @@ exports.updateProjectStatus2 = async (req, res, next) => {
         }
 
         if (findTag.tagName === 'Graduated') {
-            graduationDates = Moments(new Date(dateOfGraduation)).tz(
-                'Africa/Kampala'
-            )
+            graduationDates = GraduationDate
+              
 
             findProject.GraduationDate = graduationDates
 
@@ -1201,7 +1200,7 @@ exports.getPaginatedProjects = async (req, res, next) => {
             .limit(perPages)
             .populate(
                 'student examiners.examinerId examiners.projectAppointmentLetter examinerReports.reportId files.fileId opponents.opponentId opponentReports.reportId opponents.projectAppointmentLetter FinalSubmissionFiles.fileId supervisor.supervisorId doctoralmembers.doctoralmemberId registration.registrationId projectStatus.projectStatusId'
-            )
+            )  
 
         let current_total = await ProjectModel.find()
             .sort({ createdAt: -1 })

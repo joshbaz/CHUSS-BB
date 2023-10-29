@@ -115,6 +115,7 @@ router.get('/files/:id', (req, res) => {
             let fileOutput =
                 `data:${files[0].contentType};base64,` +
                 Buffer(data).toString('base64')
+                
             res.end(fileOutput)
         })
 

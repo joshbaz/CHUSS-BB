@@ -16,8 +16,18 @@ module.exports = (req, res, next) => {
     let decodedToken
 
     try {
-        decodedToken = jwt.verify(token, process.env.SECRET)
+        jwt.verify(token, process.env.SECRET, (err, decoded) => {
+            if (err) {
+                console.log('tokenerr', err)
+                const errors = new Error('invalid token')
+                errors.statusCode = 401
+                throw errors
+            } else {
+                decodedToken = decoded
+            }
+        })
     } catch (err) {
+        console.log('results', err)
         err.statusCode = 500
         throw err
     }
@@ -36,12 +46,14 @@ module.exports = (req, res, next) => {
                 const error = new Error('Not authorized')
                 error.statusCode = 403
                 throw error
+            } else {
+                next()
             }
-
-            next()
         } catch (error) {
-            error.statusCode = 500
-            throw error
+            if (!error.statusCode) {
+                error.statusCode = 500
+            }
+            next(error)
         }
     }
 

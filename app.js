@@ -118,9 +118,21 @@ mongoose
                 //  console.log('client connected', socket.handshake.auth.token)
                 let token = socket.handshake.auth.token
                 let decodedToken = token
-                    ? jwt.verify(token, process.env.SECRET, {
-                          ignoreExpiration: true,
-                      })
+                    ? jwt.verify(
+                          token,
+                          process.env.SECRET,
+                          {
+                              ignoreExpiration: true,
+                          },
+                          (err, decoded) => {
+                              if (err) {
+                                  console.log('tokenerr', err)
+                                  return null
+                              } else {
+                                  return decoded
+                              }
+                          }
+                      )
                     : null
 
                 if (decodedToken) {
@@ -187,8 +199,6 @@ mongoose
 //            //await findIndividualReport.save()
 //        }
 //    })
-
-
 
 //sending SMS
 // const accountSid = process.env.TWILIO_ACCOUNT_SID
