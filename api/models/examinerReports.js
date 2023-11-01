@@ -26,6 +26,9 @@ const examinerReportSchema = mongoose.Schema(
         creationDate: {
             type: Date,
         },
+        appointmentDate: {
+            type: Date,
+        },
         submissionDate: {
             type: Date,
         },
@@ -40,6 +43,10 @@ const examinerReportSchema = mongoose.Schema(
         SubmissionReminder: {
             type: Boolean,
             default: false,
+        },
+        submissionType: {
+            type: String,
+            default: 'normal',
         },
         SubmissionReminderDate: {
             type: String,
