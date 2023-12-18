@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Authorization For Viva Voce</title>
+    <title>{{title}}</title>
 
 </head>
 
@@ -24,7 +24,7 @@
             </tr>
              <tr>
                 <div style="margin-top: 20px; margin-left:20px;">
-                 <span data-bind='text: student'>{{student}}</span> <strong><span data-bind="text: regNumber">({{regNumber}})</span></strong> has been authorized for viva voce on {{statusDate}}.
+                 <span data-bind='text: student'>{{student}}</span> <strong><span data-bind="text: regNumber">({{regNumber}})</span></strong> has been {{title}} on {{statusDate}}.
                 </div>
             </tr>
             <tr>

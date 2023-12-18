@@ -667,174 +667,209 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                 /** Section to handle email requests and SMS */
                 /** Send email if status is authorized for viva and send sms  */
                 /** to be commented out */
-                // if (
-                //     saveProjectStatus.status.toLowerCase() ===
-                //     'authorised for viva voce'
-                // ) {
-                //     let studentName = findProject.student.studentName
-                //     let definedStatusDate = Moments(
-                //         new Date(saveProjectStatus.statusDate)
-                //     )
-                //         .tz('Africa/Kampala')
-                //         .format('MMM Do, YYYY')
-                //     let regNumber = findProject.student.registrationNumber
+                if (
+                    saveProjectStatus.status.toLowerCase() ===
+                    'authorised for viva voce'
+                ) {
+                    let studentName = findProject.student.studentName
+                    let definedStatusDate = Moments(
+                        new Date(saveProjectStatus.statusDate)
+                    )
+                        .tz('Africa/Kampala')
+                        .format('MMM Do, YYYY')
+                    let regNumber = findProject.student.registrationNumber
 
-                //     //send an email to staff members
-                //     /** email configurations */
+                    //send an email to staff members
+                    /** email configurations */
 
-                //     let template = fs.readFileSync(
-                //         './emailStatusUpdate.hjs',
-                //         'utf-8'
-                //     )
-                //     let compliedTemplate = hogan.compile(template)
+                    let template = fs.readFileSync(
+                        './emailStatusUpdate.hjs',
+                        'utf-8'
+                    )
+                    let compliedTemplate = hogan.compile(template)
 
-                //     let mailOptions = {
-                //         from: 'joshuakimbareeba@gmail.com',
-                //         to: 'joshuakimbareeba@gmail.com',
-                //         subject: `Notification for Viva Voce Authorization for ${studentName}`,
-                //         html: compliedTemplate.render({
-                //             student: studentName,
-                //             regNumber: findProject.student.registrationNumber,
-                //             statusDate: definedStatusDate,
-                //             title: 'Authorized for viva voce',
-                //         }),
-                //     }
+                    let mailOptions = {
+                        from: 'graduate.chuss@gmail.com',
+                        to: 'joshuakimbareeba@gmail.com',
+                        subject: `Notification for Viva Voce Authorization for ${studentName}`,
+                        html: compliedTemplate.render({
+                            student: studentName,
+                            regNumber: findProject.student.registrationNumber,
+                            statusDate: definedStatusDate,
+                            title: 'Authorized to conduct viva voce',
+                        }),
+                    }
 
-                //     transporter.sendMail(mailOptions, async (error, info) => {
-                //         if (error) {
-                //             console.log(error)
-                //         } else {
-                //             console.log('email sent: ' + info.response)
-                //             // findIndividualReport.SubmissionReminder = true
-                //             // findIndividualReport.SubmissionReminderDate = currentDate
-                //             //await findIndividualReport.save()
-                //         }
-                //     })
+                    transporter.sendMail(mailOptions, async (error, info) => {
+                        if (error) {
+                            console.log(error)
+                        } else {
+                            console.log('email sent: ' + info.response)
+                            // findIndividualReport.SubmissionReminder = true
+                            // findIndividualReport.SubmissionReminderDate = currentDate
+                            //await findIndividualReport.save()
+                        }
+                    })
 
-                //     //send an sms to the staff members
-                //     //sending SMS
-                //     const accountSid = process.env.TWILIO_ACCOUNT_SID
-                //     const authToken = process.env.TWILIO_AUTH_TOKEN
-                //     const client = require('twilio')(accountSid, authToken)
-                //     let PhoneNumberArray = [
-                //         '+256772352887', //Prof.EA
-                //         '+256774344905', //Dr. ZS
-                //         '+256706861165', //JK
-                //     ]
+                    //send an sms to the staff members
+                    //sending SMS
+                    const accountSid = process.env.TWILIO_ACCOUNT_SID
+                    const authToken = process.env.TWILIO_AUTH_TOKEN
+                    const client = require('twilio')(accountSid, authToken)
+                    let PhoneNumberArray = [
+                        '+256772352887', //Prof.EA
+                        '+256774344905', //Dr. ZS
+                        '+256706861165', //JK
+                    ]
 
-                //     for (
-                //         let iteration = 0;
-                //         iteration < PhoneNumberArray.length;
-                //         iteration++
-                //     ) {
-                //         let ttIteration = iteration + 1
+                    for (
+                        let iteration = 0;
+                        iteration < PhoneNumberArray.length;
+                        iteration++
+                    ) {
+                        let ttIteration = iteration + 1
 
-                //         client.messages
-                //             .create({
-                //                 messagingServiceSid: process.env.messageID,
-                //                 body: `${studentName} of Reg. No ${regNumber} has been Authorized for Viva Voce on ${definedStatusDate}`,
-                //                 to: PhoneNumberArray[iteration],
-                //             })
-                //             .then((message) => console.log(message.sid))
+                        client.messages
+                            .create({
+                                messagingServiceSid: process.env.messageID,
+                                body: `${studentName} of Reg. No ${regNumber} has been Authorized for Viva Voce on ${definedStatusDate}`,
+                                to: PhoneNumberArray[iteration],
+                            })
+                            .then((message) => console.log(message.sid))
 
-                //         if (ttIteration === PhoneNumberArray.length) {
-                //             res.status(200).json('status added')
-                //         }
-                //     }
+                        if (ttIteration === PhoneNumberArray.length) {
+                            res.status(200).json('status added')
+                        }
+                    }
 
-                //     // res.status(200).json('status added')
-                // } else if (
-                //     saveProjectStatus.status.toLowerCase() ===
-                //     'authorized for public defense'
-                // ) {
-                //     let studentName = findProject.student.studentName
-                //     let definedStatusDate = Moments(
-                //         new Date(saveProjectStatus.statusDate)
-                //     )
-                //         .tz('Africa/Kampala')
-                //         .format('MMM Do, YYYY')
+                    // res.status(200).json('status added')
+                } else if (
+                    saveProjectStatus.status.toLowerCase() ===
+                    'authorized for public defense'
+                ) {
+                    let studentName = findProject.student.studentName
+                    let definedStatusDate = Moments(
+                        new Date(saveProjectStatus.statusDate)
+                    )
+                        .tz('Africa/Kampala')
+                        .format('MMM Do, YYYY')
 
-                //     let regNumber = findProject.student.registrationNumber
-                //     //send an sms to the staff members
-                //     //sending SMS
-                //     const accountSid = process.env.TWILIO_ACCOUNT_SID
-                //     const authToken = process.env.TWILIO_AUTH_TOKEN
-                //     const client = require('twilio')(accountSid, authToken)
-                //     let PhoneNumberArray = [
-                //         '+256752667844', //Prof.JA
-                //         '+256774344905', //Dr.ZS
-                //         '+256772352887', //Prof.EA
-                //         '+256706861165', //JK
-                //     ]
+                    let regNumber = findProject.student.registrationNumber
 
-                //     for (
-                //         let iteration = 0;
-                //         iteration < PhoneNumberArray.length;
-                //         iteration++
-                //     ) {
-                //         let ttIteration = iteration + 1
+                    //send email first
 
-                //         client.messages
-                //             .create({
-                //                 messagingServiceSid: process.env.messageID,
-                //                 body: `${studentName} of Reg. No ${regNumber} has been Authorized for Public Defence on ${definedStatusDate}`,
-                //                 to: PhoneNumberArray[iteration],
-                //             })
-                //             .then((message) => console.log(message.sid))
+                     //send an email to staff members
+                     /** email configurations */
 
-                //         if (ttIteration === PhoneNumberArray.length) {
-                //             res.status(200).json('status added')
-                //         }
-                //     }
-                // } else if (
-                //     saveProjectStatus.status.toLowerCase() ===
-                //     'publicly defended'
-                // ) {
-                //     //this section is for public defense
-                //     let studentName = findProject.student.studentName
-                //     let definedStatusDate = Moments(
-                //         new Date(saveProjectStatus.statusDate)
-                //     )
-                //         .tz('Africa/Kampala')
-                //         .format('MMM Do, YYYY')
+                     let template = fs.readFileSync(
+                         './emailStatusUpdate.hjs',
+                         'utf-8'
+                     )
+                     let compliedTemplate = hogan.compile(template)
 
-                //     let regNumber = findProject.student.registrationNumber
-                //     //send an sms to the staff members
-                //     //sending SMS
-                //     const accountSid = process.env.TWILIO_ACCOUNT_SID
-                //     const authToken = process.env.TWILIO_AUTH_TOKEN
-                //     const client = require('twilio')(accountSid, authToken)
-                //     let PhoneNumberArray = [
-                //         '+256752667844', //Prof.JA
-                //         '+256774344905', //Dr.ZS
-                //         '+256772352887', //Prof.EA
-                //         '+256706861165', //JK
-                //     ]
+                     let mailOptions = {
+                         from: 'graduate.chuss@gmail.com',
+                         to: 'zsekito@gmail.com',
+                         subject: `Notification for Public Defence Authorization for ${studentName}`,
+                         html: compliedTemplate.render({
+                             student: studentName,
+                             regNumber: findProject.student.registrationNumber,
+                             statusDate: definedStatusDate,
+                             title: 'Authorized to Conduct Public Defence',
+                         }),
+                     }
 
-                //     for (
-                //         let iteration = 0;
-                //         iteration < PhoneNumberArray.length;
-                //         iteration++
-                //     ) {
-                //         let ttIteration = iteration + 1
+                     transporter.sendMail(mailOptions, async (error, info) => {
+                         if (error) {
+                             console.log(error)
+                         } else {
+                             console.log('email sent: ' + info.response)
+                             // findIndividualReport.SubmissionReminder = true
+                             // findIndividualReport.SubmissionReminderDate = currentDate
+                             //await findIndividualReport.save()
+                         }
+                     })
+                    //send an sms to the staff members
+                    //sending SMS
+                    const accountSid = process.env.TWILIO_ACCOUNT_SID
+                    const authToken = process.env.TWILIO_AUTH_TOKEN
+                    const client = require('twilio')(accountSid, authToken)
+                    let PhoneNumberArray = [
+                        '+256752667844', //Prof.JA
+                        '+256774344905', //Dr.ZS
+                        '+256772352887', //Prof.EA
+                        '+256706861165', //JK
+                    ]
 
-                //         client.messages
-                //             .create({
-                //                 messagingServiceSid: process.env.messageID,
-                //                 body: `${studentName} of Reg. No ${regNumber} has Publicly Defended his PhD Work on ${definedStatusDate}`,
-                //                 to: PhoneNumberArray[iteration],
-                //             })
-                //             .then((message) => console.log(message.sid))
+                    for (
+                        let iteration = 0;
+                        iteration < PhoneNumberArray.length;
+                        iteration++
+                    ) {
+                        let ttIteration = iteration + 1
 
-                //         if (ttIteration === PhoneNumberArray.length) {
-                //             res.status(200).json('status added')
-                //         }
-                //     }
-                // } else {
-                //     res.status(200).json('status added')
-                // }
+                        client.messages
+                            .create({
+                                messagingServiceSid: process.env.messageID,
+                                body: `${studentName} of Reg. No ${regNumber} has been Authorized for Public Defence on ${definedStatusDate}`,
+                                to: PhoneNumberArray[iteration],
+                            })
+                            .then((message) => console.log(message.sid))
+
+                        if (ttIteration === PhoneNumberArray.length) {
+                            res.status(200).json('status added')
+                        }
+                    }
+                } else if (
+                    saveProjectStatus.status.toLowerCase() ===
+                    'publicly defended'
+                ) {
+                    //this section is for public defense
+                    let studentName = findProject.student.studentName
+                    let definedStatusDate = Moments(
+                        new Date(saveProjectStatus.statusDate)
+                    )
+                        .tz('Africa/Kampala')
+                        .format('MMM Do, YYYY')
+
+                    let regNumber = findProject.student.registrationNumber
+                    //send an sms to the staff members
+                    //sending SMS
+                    // const accountSid = process.env.TWILIO_ACCOUNT_SID
+                    // const authToken = process.env.TWILIO_AUTH_TOKEN
+                    // const client = require('twilio')(accountSid, authToken)
+                    // let PhoneNumberArray = [
+                    //     '+256752667844', //Prof.JA
+                    //     '+256774344905', //Dr.ZS
+                    //     '+256772352887', //Prof.EA
+                    //     '+256706861165', //JK
+                    // ]
+
+                    // for (
+                    //     let iteration = 0;
+                    //     iteration < PhoneNumberArray.length;
+                    //     iteration++
+                    // ) {
+                    //     let ttIteration = iteration + 1
+
+                    //     client.messages
+                    //         .create({
+                    //             messagingServiceSid: process.env.messageID,
+                    //             body: `${studentName} of Reg. No ${regNumber} has Publicly Defended his PhD Work on ${definedStatusDate}`,
+                    //             to: PhoneNumberArray[iteration],
+                    //         })
+                    //         .then((message) => console.log(message.sid))
+
+                    //     if (ttIteration === PhoneNumberArray.length) {
+                    //         res.status(200).json('status added')
+                    //     }
+                    // }
+                    res.status(200).json('status added')
+                } else {
+                    res.status(200).json('status added')
+                }
                 /** end of comment */
-                   res.status(200).json('status added')
+                 //  res.status(200).json('status added')
             } else {
                 findActiveStatus.endDate = endDates
                 findActiveStatus.active = false
@@ -874,174 +909,209 @@ exports.updateProjectStatus2 = async (req, res, next) => {
                 /** Section to handle email requests and SMS */
                 /** Send email if status is authorized for viva and send sms  */
                 /** to be commented out */
-                // if (
-                //     saveProjectStatus.status.toLowerCase() ===
-                //     'authorised for viva voce'
-                // ) {
-                //     let studentName = findProject.student.studentName
-                //     let definedStatusDate = Moments(
-                //         new Date(saveProjectStatus.statusDate)
-                //     )
-                //         .tz('Africa/Kampala')
-                //         .format('MMM Do, YYYY')
-                //     let regNumber = findProject.student.registrationNumber
+                if (
+                    saveProjectStatus.status.toLowerCase() ===
+                    'authorised for viva voce'
+                ) {
+                    let studentName = findProject.student.studentName
+                    let definedStatusDate = Moments(
+                        new Date(saveProjectStatus.statusDate)
+                    )
+                        .tz('Africa/Kampala')
+                        .format('MMM Do, YYYY')
+                    let regNumber = findProject.student.registrationNumber
 
-                //     //send an email to staff members
-                //     /** email configurations */
+                    //send an email to staff members
+                    /** email configurations */
 
-                //     let template = fs.readFileSync(
-                //         './emailStatusUpdate.hjs',
-                //         'utf-8'
-                //     )
-                //     let compliedTemplate = hogan.compile(template)
+                    let template = fs.readFileSync(
+                        './emailStatusUpdate.hjs',
+                        'utf-8'
+                    )
+                    let compliedTemplate = hogan.compile(template)
 
-                //     let mailOptions = {
-                //         from: 'joshuakimbareeba@gmail.com',
-                //         to: 'joshuakimbareeba@gmail.com',
-                //         subject: `Notification for Viva Voce Authorization for ${studentName}`,
-                //         html: compliedTemplate.render({
-                //             student: studentName,
-                //             regNumber: findProject.student.registrationNumber,
-                //             statusDate: definedStatusDate,
-                //             title: 'Authorized for viva voce',
-                //         }),
-                //     }
+                    let mailOptions = {
+                        from: 'graduate.chuss@gmail.com',
+                        to: 'joshuakimbareeba@gmail.com',
+                        subject: `Notification for Viva Voce Authorization for ${studentName}`,
+                        html: compliedTemplate.render({
+                            student: studentName,
+                            regNumber: findProject.student.registrationNumber,
+                            statusDate: definedStatusDate,
+                            title: 'Authorized to conduct viva voce',
+                        }),
+                    }
 
-                //     transporter.sendMail(mailOptions, async (error, info) => {
-                //         if (error) {
-                //             console.log(error)
-                //         } else {
-                //             console.log('email sent: ' + info.response)
-                //             // findIndividualReport.SubmissionReminder = true
-                //             // findIndividualReport.SubmissionReminderDate = currentDate
-                //             //await findIndividualReport.save()
-                //         }
-                //     })
+                    transporter.sendMail(mailOptions, async (error, info) => {
+                        if (error) {
+                            console.log(error)
+                        } else {
+                            console.log('email sent: ' + info.response)
+                            // findIndividualReport.SubmissionReminder = true
+                            // findIndividualReport.SubmissionReminderDate = currentDate
+                            //await findIndividualReport.save()
+                        }
+                    })
 
-                //     //send an sms to the staff members
-                //     //sending SMS
-                //     const accountSid = process.env.TWILIO_ACCOUNT_SID
-                //     const authToken = process.env.TWILIO_AUTH_TOKEN
-                //     const client = require('twilio')(accountSid, authToken)
-                //     let PhoneNumberArray = [
-                //         '+256774344905', //Dr.ZS
-                //         '+256772352887', //Prof.EA
-                //         '+256706861165', //JK
-                //     ]
+                    //send an sms to the staff members
+                    //sending SMS
+                    const accountSid = process.env.TWILIO_ACCOUNT_SID
+                    const authToken = process.env.TWILIO_AUTH_TOKEN
+                    const client = require('twilio')(accountSid, authToken)
+                    let PhoneNumberArray = [
+                        '+256774344905', //Dr.ZS
+                        '+256772352887', //Prof.EA
+                        '+256706861165', //JK
+                    ]
 
-                //     for (
-                //         let iteration = 0;
-                //         iteration < PhoneNumberArray.length;
-                //         iteration++
-                //     ) {
-                //         let ttIteration = iteration + 1
+                    for (
+                        let iteration = 0;
+                        iteration < PhoneNumberArray.length;
+                        iteration++
+                    ) {
+                        let ttIteration = iteration + 1
 
-                //         client.messages
-                //             .create({
-                //                 messagingServiceSid: process.env.messageID,
-                //                 body: `${studentName} of Reg. No ${regNumber} has been Authorized for Viva Voce on ${definedStatusDate}`,
-                //                 to: PhoneNumberArray[iteration],
-                //             })
-                //             .then((message) => console.log(message.sid))
+                        client.messages
+                            .create({
+                                messagingServiceSid: process.env.messageID,
+                                body: `${studentName} of Reg. No ${regNumber} has been Authorized for Viva Voce on ${definedStatusDate}`,
+                                to: PhoneNumberArray[iteration],
+                            })
+                            .then((message) => console.log(message.sid))
 
-                //         if (ttIteration === PhoneNumberArray.length) {
-                //             res.status(200).json('status added')
-                //         }
-                //     }
+                        if (ttIteration === PhoneNumberArray.length) {
+                            res.status(200).json('status added')
+                        }
+                    }
 
-                //     // res.status(200).json('status added')
-                // } else if (
-                //     saveProjectStatus.status.toLowerCase() ===
-                //     'authorized for public defense'
-                // ) {
-                //     let studentName = findProject.student.studentName
-                //     let definedStatusDate = Moments(
-                //         new Date(saveProjectStatus.statusDate)
-                //     )
-                //         .tz('Africa/Kampala')
-                //         .format('MMM Do, YYYY')
+                    // res.status(200).json('status added')
+                } else if (
+                    saveProjectStatus.status.toLowerCase() ===
+                    'authorized for public defense'
+                ) {
+                    let studentName = findProject.student.studentName
+                    let definedStatusDate = Moments(
+                        new Date(saveProjectStatus.statusDate)
+                    )
+                        .tz('Africa/Kampala')
+                        .format('MMM Do, YYYY')
 
-                //     let regNumber = findProject.student.registrationNumber
-                //     //send an sms to the staff members
-                //     //sending SMS
-                //     const accountSid = process.env.TWILIO_ACCOUNT_SID
-                //     const authToken = process.env.TWILIO_AUTH_TOKEN
-                //     const client = require('twilio')(accountSid, authToken)
-                //     let PhoneNumberArray = [
-                //         '+256752667844', //Prof.JA
-                //         '+256774344905', //Dr.ZS
-                //         '+256772352887', //Prof.EA
-                //         '+256706861165', //JK
-                //     ]
+                    let regNumber = findProject.student.registrationNumber
 
-                //     for (
-                //         let iteration = 0;
-                //         iteration < PhoneNumberArray.length;
-                //         iteration++
-                //     ) {
-                //         let ttIteration = iteration + 1
+                    //send email first
 
-                //         client.messages
-                //             .create({
-                //                 messagingServiceSid: process.env.messageID,
-                //                 body: `${studentName} of Reg. No ${regNumber} has been Authorized for Public Defence on ${definedStatusDate}`,
-                //                 to: PhoneNumberArray[iteration],
-                //             })
-                //             .then((message) => console.log(message.sid))
+                    //send an email to staff members
+                    /** email configurations */
 
-                //         if (ttIteration === PhoneNumberArray.length) {
-                //             res.status(200).json('status added')
-                //         }
-                //     }
-                // } else if (
-                //     saveProjectStatus.status.toLowerCase() ===
-                //     'publicly defended'
-                // ) {
-                //     //this section is for public defense
-                //     let studentName = findProject.student.studentName
-                //     let definedStatusDate = Moments(
-                //         new Date(saveProjectStatus.statusDate)
-                //     )
-                //         .tz('Africa/Kampala')
-                //         .format('MMM Do, YYYY')
+                    let template = fs.readFileSync(
+                        './emailStatusUpdate.hjs',
+                        'utf-8'
+                    )
+                    let compliedTemplate = hogan.compile(template)
 
-                //     let regNumber = findProject.student.registrationNumber
-                //     //send an sms to the staff members
-                //     //sending SMS
-                //     const accountSid = process.env.TWILIO_ACCOUNT_SID
-                //     const authToken = process.env.TWILIO_AUTH_TOKEN
-                //     const client = require('twilio')(accountSid, authToken)
-                //     let PhoneNumberArray = [
-                //         '+256752667844', //Prof.JA
-                //         '+256774344905', //Dr.ZS
-                //         '+256772352887', //Prof.EA
-                //         '+256706861165', //JK
-                //     ]
+                    let mailOptions = {
+                        from: 'graduate.chuss@gmail.com',
+                        to: 'zsekito@gmail.com',
+                        subject: `Notification for Public Defence Authorization for ${studentName}`,
+                        html: compliedTemplate.render({
+                            student: studentName,
+                            regNumber: findProject.student.registrationNumber,
+                            statusDate: definedStatusDate,
+                            title: 'Authorized to Conduct Public Defence',
+                        }),
+                    }
 
-                //     for (
-                //         let iteration = 0;
-                //         iteration < PhoneNumberArray.length;
-                //         iteration++
-                //     ) {
-                //         let ttIteration = iteration + 1
+                    transporter.sendMail(mailOptions, async (error, info) => {
+                        if (error) {
+                            console.log(error)
+                        } else {
+                            console.log('email sent: ' + info.response)
+                            // findIndividualReport.SubmissionReminder = true
+                            // findIndividualReport.SubmissionReminderDate = currentDate
+                            //await findIndividualReport.save()
+                        }
+                    })
+                    //send an sms to the staff members
+                    //sending SMS
+                    const accountSid = process.env.TWILIO_ACCOUNT_SID
+                    const authToken = process.env.TWILIO_AUTH_TOKEN
+                    const client = require('twilio')(accountSid, authToken)
+                    let PhoneNumberArray = [
+                        '+256752667844', //Prof.JA
+                        '+256774344905', //Dr.ZS
+                        '+256772352887', //Prof.EA
+                        '+256706861165', //JK
+                    ]
 
-                //         client.messages
-                //             .create({
-                //                 messagingServiceSid: process.env.messageID,
-                //                 body: `${studentName} of Reg. No ${regNumber} has Publicly Defended his PhD Work on ${definedStatusDate}`,
-                //                 to: PhoneNumberArray[iteration],
-                //             })
-                //             .then((message) => console.log(message.sid))
+                    for (
+                        let iteration = 0;
+                        iteration < PhoneNumberArray.length;
+                        iteration++
+                    ) {
+                        let ttIteration = iteration + 1
 
-                //         if (ttIteration === PhoneNumberArray.length) {
-                //             res.status(200).json('status added')
-                //         }
-                //     }
-                // } else {
-                //     res.status(200).json('status added')
-                // }
+                        client.messages
+                            .create({
+                                messagingServiceSid: process.env.messageID,
+                                body: `${studentName} of Reg. No ${regNumber} has been Authorized for Public Defence on ${definedStatusDate}`,
+                                to: PhoneNumberArray[iteration],
+                            })
+                            .then((message) => console.log(message.sid))
+
+                        if (ttIteration === PhoneNumberArray.length) {
+                            res.status(200).json('status added')
+                        }
+                    }
+                } else if (
+                    saveProjectStatus.status.toLowerCase() ===
+                    'publicly defended'
+                ) {
+                    //this section is for public defense
+                    let studentName = findProject.student.studentName
+                    let definedStatusDate = Moments(
+                        new Date(saveProjectStatus.statusDate)
+                    )
+                        .tz('Africa/Kampala')
+                        .format('MMM Do, YYYY')
+
+                    let regNumber = findProject.student.registrationNumber
+                    //send an sms to the staff members
+                    //sending SMS
+                    // const accountSid = process.env.TWILIO_ACCOUNT_SID
+                    // const authToken = process.env.TWILIO_AUTH_TOKEN
+                    // const client = require('twilio')(accountSid, authToken)
+                    // let PhoneNumberArray = [
+                    //     '+256752667844', //Prof.JA
+                    //     '+256774344905', //Dr.ZS
+                    //     '+256772352887', //Prof.EA
+                    //     '+256706861165', //JK
+                    // ]
+
+                    // for (
+                    //     let iteration = 0;
+                    //     iteration < PhoneNumberArray.length;
+                    //     iteration++
+                    // ) {
+                    //     let ttIteration = iteration + 1
+
+                    //     client.messages
+                    //         .create({
+                    //             messagingServiceSid: process.env.messageID,
+                    //             body: `${studentName} of Reg. No ${regNumber} has Publicly Defended his PhD Work on ${definedStatusDate}`,
+                    //             to: PhoneNumberArray[iteration],
+                    //         })
+                    //         .then((message) => console.log(message.sid))
+
+                    //     if (ttIteration === PhoneNumberArray.length) {
+                    //         res.status(200).json('status added')
+                    //     }
+                    // }
+                     res.status(200).json('status added')
+                } else {
+                    res.status(200).json('status added')
+                }
                 /** end of comment */
-                res.status(200).json('status added')
+               // res.status(200).json('status added')
             }
         }
     } catch (error) {
@@ -1052,130 +1122,7 @@ exports.updateProjectStatus2 = async (req, res, next) => {
     }
 }
 
-/** update Project Status */
-/** nolonger in use */
-// exports.updateProjectStatus = async (req, res, next) => {
-//     try {
-//         const { status, notes } = req.body
-//         const projectId = req.params.id
-//         const findProject = await ProjectModel.findById(projectId)
-//         if (!findProject) {
-//             const error = new Error('No project found')
-//             error.statusCode = 404
-//             throw error
-//         }
-//         let newDataArray = [...findProject.projectStatus]
 
-//         // newDataArray.filter((element, index) => {
-//         //     if (element.active === true) {
-//         //         if (element.status !== status) {
-//         //             newDataArray[index].status = false
-//         //         }
-//         //     }
-//         // })
-
-//         for (let iteration = 0; iteration < newDataArray.length; iteration++) {
-//             let alliteration = iteration + 1
-
-//             if (newDataArray[iteration].active === true) {
-//                 if (
-//                     newDataArray[iteration].status.toLowerCase() !==
-//                     status.toLowerCase()
-//                 ) {
-//                     newDataArray[iteration].active = false
-//                     newDataArray[iteration].completed = true
-
-//                     // findProject.projectStatus = [
-//                     //     ...newDataArray,
-//                     //     {
-//                     //         status: status,
-//                     //         notes: notes,
-//                     //         active: true,
-//                     //     },
-//                     // ]
-
-//                     // await findProject.save()
-//                     // return res.status(200).json('status 3 updated')
-//                 } else {
-//                     newDataArray[iteration].notes = notes
-//                     findProject.activeStatus = status
-//                     findProject.projectStatus = [...newDataArray]
-//                     await findProject.save()
-//                     io.getIO().emit('updatestudent', {
-//                         actions: 'update-student',
-//                         data: findProject._id.toString(),
-//                     })
-//                     return res.status(200).json('status  updated')
-//                 }
-//             }
-
-//             if (
-//                 newDataArray[iteration].status.toLowerCase() ===
-//                 status.toLowerCase()
-//             ) {
-//                 newDataArray[iteration].active = true
-//                 newDataArray[iteration].completed = false
-//                 findProject.activeStatus = status
-//                 let removedArray = newDataArray.splice(iteration + 1)
-//                 if (removedArray.length > 0) {
-//                     let filteredArray = removedArray.filter((data) => {
-//                         data.completed = false
-//                         data.active = false
-//                         return data
-//                     })
-
-//                     //  console.log('filtered data', filteredArray, newDataArray)
-
-//                     findProject.projectStatus = [
-//                         ...newDataArray,
-//                         ...filteredArray,
-//                     ]
-//                     await findProject.save()
-//                     io.getIO().emit('updatestudent', {
-//                         actions: 'update-student',
-//                         data: findProject._id.toString(),
-//                     })
-//                     return res.status(200).json('status  updated')
-//                 } else {
-//                     findProject.projectStatus = [...newDataArray]
-//                     await findProject.save()
-//                     io.getIO().emit('updatestudent', {
-//                         actions: 'update-student',
-//                         data: findProject._id.toString(),
-//                     })
-//                     return res.status(200).json('status  updated')
-//                 }
-//             }
-
-//             if (
-//                 alliteration === newDataArray.length &&
-//                 newDataArray[iteration].status.toLowerCase() !==
-//                     status.toLowerCase()
-//             ) {
-//                 findProject.projectStatus = [
-//                     ...newDataArray,
-//                     {
-//                         status: status,
-//                         notes: notes,
-//                         active: true,
-//                     },
-//                 ]
-//                 findProject.activeStatus = status
-//                 await findProject.save()
-//                 io.getIO().emit('updatestudent', {
-//                     actions: 'update-student',
-//                     data: findProject._id.toString(),
-//                 })
-//                 res.status(200).json('status  updated')
-//             }
-//         }
-//     } catch (error) {
-//         if (!error.statusCode) {
-//             error.statusCode = 500
-//         }
-//         next(error)
-//     }
-// }
 
 /** paginated projects */
 
