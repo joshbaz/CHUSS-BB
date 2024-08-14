@@ -9,12 +9,20 @@ const studentSchema = mongoose.Schema(
         },
 
         studentName: String,
-        gender: 'String',
+        gender: String,
         graduate_program_type: String,
         degree_program: String,
         semester: String,
         academicYear: String,
         schoolName: String,
+        schoolId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'schools',
+        },
+        departmentId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'departments',
+        },
         departmentName: String,
         phoneNumber: String,
         email: String,

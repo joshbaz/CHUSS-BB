@@ -15,6 +15,14 @@ const supervisorsSchema = mongoose.Schema(
             type: String,
             default: 'Supervisor',
         },
+        schoolId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'schools',
+        },
+        departmentId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'departments',
+        },
     },
     { timestamps: true }
 )

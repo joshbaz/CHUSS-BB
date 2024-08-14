@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const projectController = require('../controllers/project')
+const projectController = require('../controllers/project.js')
 const multer = require('multer')
 const { GridFsStorage } = require('multer-gridfs-storage')
 
